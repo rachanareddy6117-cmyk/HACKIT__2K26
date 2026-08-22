@@ -97,42 +97,29 @@ def predict_landmarks(req: LandmarkPredictionRequest):
     current_time_str = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
     extracted_features = []
 
-    # Parse landmarks if passed
-    if req.hand_landmarks:
+    if req.hand_landmarks and len(req.hand_landmarks) > 0:
         for lm in req.hand_landmarks:
             extracted_features.extend([lm.x, lm.y, lm.z or 0.0])
     elif req.raw_vector:
         extracted_features = req.raw_vector
-    elif req.image_base64:
-        # Fallback simulated extraction from image payload
-        b64_len = len(req.image_base64)
-        simulated_vector = [(i * 0.015 + (b64_len % 7) * 0.03) for i in range(63)]
-        extracted_features = simulated_vector
     else:
-        # Generate default baseline vector if empty payload frame passed
         extracted_features = [0.25, 0.45, 0.12] * 21
 
     features_np = np.array(extracted_features, dtype=np.float32)
     raw_gloss, raw_confidence = compute_heuristic_isl_gloss(features_np)
 
-    # Temporal Smoothing & Debouncing Logic
+    # Require stable landmark buffer over window before confirming debounced match
     gesture_history.append(raw_gloss)
     gloss_counts = collections.Counter(gesture_history)
     most_common_gloss, count = gloss_counts.most_common(1)[0]
     
-    debounced_gloss = raw_gloss
-    is_debounced = False
+    # Strictly require 80% stability over temporal window
+    is_debounced = (count / len(gesture_history)) >= 0.80
+    debounced_gloss = most_common_gloss if is_debounced else "ANALYZING_GESTURE"
 
-    # Check stability ratio over window
-    if count / len(gesture_history) >= STABILITY_THRESHOLD:
-        debounced_gloss = most_common_gloss
-        is_debounced = True
-
-    # Generate top candidates for UI feedback
     candidates = [
         {"gloss": debounced_gloss, "confidence": round(raw_confidence, 3)},
-        {"gloss": ISL_GLOSSES[(ISL_GLOSSES.index(debounced_gloss) + 1) % len(ISL_GLOSSES)], "confidence": round(raw_confidence * 0.8, 3)},
-        {"gloss": ISL_GLOSSES[(ISL_GLOSSES.index(debounced_gloss) + 2) % len(ISL_GLOSSES)], "confidence": round(raw_confidence * 0.6, 3)}
+        {"gloss": ISL_GLOSSES[(ISL_GLOSSES.index(raw_gloss) + 1) % len(ISL_GLOSSES)], "confidence": round(raw_confidence * 0.7, 3)}
     ]
 
     return LandmarkPredictionResponse(

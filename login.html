@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EchoSign - Authentication</title>
+  <style>
+    :root {
+      --bg-dark: #0b0f17;
+      --card-bg: rgba(18, 26, 38, 0.7);
+      --card-border: rgba(0, 242, 254, 0.15);
+      --accent-cyan: #00f2fe;
+      --accent-blue: #4facfe;
+      --accent-green: #00e676;
+      --text-main: #ffffff;
+      --text-muted: #8a99ad;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    header {
+      width: 100%;
+      max-width: 1200px;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      border-radius: 50%;
+    }
+
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 2rem;
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .column {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .col-header {
+      margin-bottom: 1rem;
+    }
+
+    .col-subtitle {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .col-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .badge {
+      align-self: flex-end;
+      background: rgba(0, 242, 254, 0.15);
+      color: var(--accent-cyan);
+      font-size: 0.75rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--accent-cyan);
+      margin-bottom: 1rem;
+    }
+
+    .btn-action {
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #00c6ff 0%, #0072ff 100%);
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(0, 198, 255, 0.4);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-action:hover {
+      box-shadow: 0 0 25px rgba(0, 198, 255, 0.7);
+      transform: translateY(-2px);
+    }
+
+    /* Google Login Column */
+    .google-box {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      margin-bottom: 1.5rem;
+    }
+
+    .google-btn {
+      background: white;
+      color: #333;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* Face Recognition Column */
+    .viewfinder {
+      width: 100%;
+      height: 200px;
+      border: 2px dashed rgba(0, 242, 254, 0.4);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      background: rgba(0, 0, 0, 0.2);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .scan-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 10px var(--accent-cyan);
+      animation: scan 2s linear infinite;
+    }
+
+    @keyframes scan {
+      0% { top: 0; }
+      50% { top: 100%; }
+      100% { top: 0; }
+    }
+
+    /* Voice Recognition Column */
+    .waveform {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      height: 80px;
+      margin-bottom: 1.5rem;
+    }
+
+    .bar {
+      width: 6px;
+      height: 20px;
+      background: var(--accent-cyan);
+      border-radius: 3px;
+      animation: pulse 1.2s infinite ease-in-out;
+    }
+
+    .bar:nth-child(2) { animation-delay: 0.2s; }
+    .bar:nth-child(3) { animation-delay: 0.4s; }
+    .bar:nth-child(4) { animation-delay: 0.1s; }
+    .bar:nth-child(5) { animation-delay: 0.3s; }
+
+    @keyframes pulse {
+      0%, 100% { height: 15px; opacity: 0.4; }
+      50% { height: 60px; opacity: 1; }
+    }
+
+    .status-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-icon"></div>
+    <h1>EchoSign</h1>
+  </header>
+
+  <main class="container">
+    
+    <!-- Option 1: Gmail Auth -->
+    <section class="column">
+      <div class="col-header">
+        <div class="col-subtitle">Standard Method</div>
+        <div class="col-title">Google Authentication</div>
+      </div>
+      <div class="card">
+        <span class="badge">Option 01</span>
+        <div class="google-box">
+          <p style="margin-bottom: 1rem; color: #8a99ad; font-size: 0.9rem;">Sign in quickly using your Google Account credentials.</p>
+          <button class="google-btn">
+            <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.1.83-.64 2.08-1.84 2.92l2.84 2.2c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.84-2.2c-.76.53-1.78.9-3.12.9-2.38 0-4.41-1.57-5.13-3.74L.97 13.04C2.45 15.98 5.48 18 9 18z"/><path fill="#FBBC05" d="M3.87 10.78c-.18-.53-.28-1.1-.28-1.78s.1-1.25.28-1.78L.97 4.96C.35 6.18 0 7.55 0 9s.35 2.82.97 4.04l2.9-2.26z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0 5.48 0 2.45 2.02.97 4.96l2.9 2.26C4.59 5.05 6.62 3.58 9 3.58z"/></svg>
+            Sign in with Google
+          </button>
+        </div>
+        <button class="btn-action">Continue with Gmail</button>
+      </div>
+    </section>
+
+    <!-- Option 2: Face ID Auth -->
+    <section class="column">
+      <div class="col-header">
+        <div class="col-subtitle">Biometric Module</div>
+        <div class="col-title">Face Verification</div>
+      </div>
+      <div class="card">
+        <span class="badge">Option 02</span>
+        <div class="viewfinder">
+          <div class="scan-line"></div>
+          <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color: var(--accent-cyan); opacity: 0.6;"><path d="M6.8 3.333A8.96 8.96 0 0 1 12 1.833c2.08 0 3.996.705 5.2 1.5M3.333 6.8A8.96 8.96 0 0 0 1.833 12c0 2.08.705 3.996 1.5 5.2m15.867-10.4a8.96 8.96 0 0 1 1.5 5.2c0 2.08-.705 3.996-1.5 5.2M17.2 20.667A8.96 8.96 0 0 1 12 22.167c-2.08 0-3.996-.705-5.2-1.5M9 9h.01M15 9h.01M10 15c.5 1 1.5 1.5 2 1.5s1.5-.5 2-1.5"/></svg>
+          <p class="status-text">Position face within frame</p>
+        </div>
+        <button class="btn-action">Scan Face to Login</button>
+      </div>
+    </section>
+
+    <!-- Option 3: Voice Auth -->
+    <section class="column">
+      <div class="col-header">
+        <div class="col-subtitle">Audio Module</div>
+        <div class="col-title">Voice Print Login</div>
+      </div>
+      <div class="card">
+        <span class="badge">Option 03</span>
+        <div style="background: rgba(0, 0, 0, 0.2); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem; text-align: center;">
+          <div class="waveform">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+          </div>
+          <p class="status-text">Say: "EchoSign Access Phrase"</p>
+        </div>
+        <button class="btn-action">
+          <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+          Authenticate Voice
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>

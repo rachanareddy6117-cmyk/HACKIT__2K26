@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EchoSign - Live Conversation & AI Assistant</title>
+  <style>
+    :root {
+      --bg: #07090e;
+      --surface: rgba(19,24,33,0.85);
+      --surface-2: rgba(255,255,255,0.03);
+      --border: rgba(255,255,255,0.08);
+      --cyan: #00f2fe;
+      --purple: #9d4edd;
+      --text: #f5f7fb;
+      --muted: #8ea0b8;
+      --danger: #ff5d5d;
+      --success: #2ad39c;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #050810 0%, #0b121d 100%);
+      color: var(--text);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .app {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 22px 22px 28px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.15rem;
+    }
+
+    .brand-mark {
+      width: 20px;
+      height: 20px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      box-shadow: 0 0 16px rgba(0,242,254,0.6);
+    }
+
+    .topbar-right {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .pill {
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: rgba(0,242,254,0.08);
+      border: 1px solid rgba(0,242,254,0.25);
+      color: var(--text);
+      font-size: 0.8rem;
+    }
+
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.3));
+      border: 1px solid rgba(255,255,255,0.25);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 200px minmax(0, 1fr) 360px;
+      gap: 18px;
+      min-height: calc(100vh - 120px);
+    }
+
+    .side,
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .side {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .nav-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: var(--muted);
+      cursor: pointer;
+      font-weight: 500;
+      border: 1px solid transparent;
+      background: transparent;
+    }
+
+    .nav-item.active {
+      background: rgba(0,242,254,0.08);
+      border-color: rgba(0,242,254,0.22);
+      color: var(--cyan);
+    }
+
+    .nav-item.danger {
+      margin-top: auto;
+      color: #ff7a7a;
+      background: rgba(255,93,93,0.08);
+      border-color: rgba(255,93,93,0.18);
+    }
+
+    .panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .feed-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0,242,254,0.08);
+      color: var(--cyan);
+      border: 1px solid rgba(0,242,254,0.2);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-weight: 700;
+      font-size: 0.74rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 12px rgba(0,242,254,0.7);
+      animation: blink 1.3s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .feed-body {
+      flex: 1;
+      padding: 16px;
+      background: rgba(0,0,0,0.1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .feed-body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,242,254,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,242,254,0.03) 1px, transparent 1px);
+      background-size: 26px 26px;
+      pointer-events: none;
+    }
+
+    .hand-svg {
+      position: relative;
+      z-index: 1;
+      width: 260px;
+      height: 260px;
+      filter: drop-shadow(0 0 22px rgba(0,242,254,0.8));
+    }
+
+    .result-box {
+      position: absolute;
+      left: 24px;
+      bottom: 24px;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      background: rgba(6,11,18,0.76);
+      border: 1px solid rgba(0,242,254,0.35);
+      border-radius: 12px;
+      padding: 12px 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .result-box .small {
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+
+    .result-box .big {
+      font-weight: 700;
+      color: var(--cyan);
+      font-size: 1.05rem;
+    }
+
+    .chat {
+      padding: 14px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .chat-header strong {
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .chat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .message {
+      max-width: 85%;
+      font-size: 0.8rem;
+      line-height: 1.5;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .message.ai {
+      background: rgba(255,255,255,0.03);
+      align-self: flex-start;
+    }
+
+    .message.user {
+      background: linear-gradient(135deg, rgba(0,242,254,0.2), rgba(157,77,221,0.28));
+      border-color: rgba(0,242,254,0.28);
+      align-self: flex-end;
+    }
+
+    .composer {
+      border-top: 1px solid var(--border);
+      margin-top: 12px;
+      padding-top: 12px;
+    }
+
+    .composer input {
+      width: 100%;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text);
+      outline: none;
+      padding: 12px 14px;
+      font-size: 0.82rem;
+    }
+
+    @media (max-width: 1050px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .side {
+        order: 2;
+      }
+      .panel {
+        order: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark"></span>
+        <span>EchoSign</span>
+      </div>
+      <div class="topbar-right">
+        <div class="pill">Persona: Deaf / Non-Speaking</div>
+        <div class="avatar"></div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="side">
+        <div class="nav-item active">💬 Conversation</div>
+        <div class="nav-item">📝 Practice</div>
+        <div class="nav-item">🔤 Translate</div>
+        <div class="nav-item danger">🚨 Emergency</div>
+      </aside>
+
+      <section class="panel">
+        <div class="feed-header">
+          <div class="live-badge"><span class="live-dot"></span> Live</div>
+          <div>1 hand detected</div>
+        </div>
+        <div class="feed-body">
+          <svg class="hand-svg" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <g stroke="#00f2fe" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M120 180V125M120 125L94 92L84 58M120 125L120 82M120 82L120 38M120 125L150 92L165 60M120 125L176 108L196 92M120 125L183 130"/>
+              <path d="M120 125L100 106L95 82M120 125L142 98L151 72M120 125L164 115L181 92"/>
+            </g>
+            <g fill="#00f2fe">
+              <circle cx="120" cy="180" r="4"/>
+              <circle cx="120" cy="125" r="4"/>
+              <circle cx="94" cy="92" r="4"/>
+              <circle cx="84" cy="58" r="4"/>
+              <circle cx="120" cy="82" r="4"/>
+              <circle cx="120" cy="38" r="4"/>
+              <circle cx="150" cy="92" r="4"/>
+              <circle cx="165" cy="60" r="4"/>
+              <circle cx="176" cy="108" r="4"/>
+              <circle cx="196" cy="92" r="4"/>
+              <circle cx="183" cy="130" r="4"/>
+            </g>
+          </svg>
+
+          <div class="result-box">
+            <div class="small">Detected Sign</div>
+            <div class="big">HELLO 👋</div>
+            <div class="small">Confidence: 94%</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel chat">
+        <div class="chat-header">
+          <strong>Echo Assistant</strong>
+          <span style="color:#2ad39c;">● AI Online</span>
+        </div>
+
+        <div class="chat-list">
+          <div class="message ai">Hi, What can I translate today? I'm Echo Assistant. Let's see how confidence score affects your main task.</div>
+          <div class="message user">Hello, can you help me with the current phrase?</div>
+        </div>
+
+        <div class="composer">
+          <input placeholder="Type a message..." />
+        </div>
+      </aside>
+    </main>
+  </div>
+</body>
+</html>
