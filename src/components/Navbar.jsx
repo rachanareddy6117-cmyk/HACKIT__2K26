@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function Navbar({ onGetStarted, onLogin }) {
   return (
-    <nav style={{
+    <nav className="landing-navbar" style={{
       position: 'sticky', top: 0, zIndex: 50,
       background: 'rgba(5,7,10,0.88)',
       borderBottom: '1px solid rgba(255,255,255,0.06)',
@@ -36,7 +36,7 @@ export default function Navbar({ onGetStarted, onLogin }) {
       </div>
 
       {/* Nav links */}
-      <div style={{ display:'flex', gap:32, alignItems:'center' }}>
+      <div className="landing-navbar-links" style={{ display:'flex', gap:32, alignItems:'center' }}>
         {['Overview','About','Template','Pricing','Patterns'].map(l => (
           <a key={l} href="#" style={{
             color:'#94a3b8', fontSize:13, fontWeight:500,
@@ -49,7 +49,7 @@ export default function Navbar({ onGetStarted, onLogin }) {
       </div>
 
       {/* CTA */}
-      <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+      <div className="landing-navbar-actions" style={{ display:'flex', alignItems:'center', gap:12 }}>
         <button onClick={onLogin} style={{
           background:'rgba(255,255,255,0.04)',
           color:'#fff', border:'1px solid rgba(255,255,255,0.08)', cursor:'pointer',

@@ -29,7 +29,7 @@ const FEATURES = [
 
 export default function Hero({ onGetStarted }) {
   return (
-    <section style={{
+    <section className="landing-hero" style={{
       minHeight:'calc(100vh - 64px)',
       background:'linear-gradient(180deg,#05070a 0%,#0b0e14 100%)',
       padding:'60px 32px 80px',
@@ -57,7 +57,7 @@ export default function Hero({ onGetStarted }) {
       }}/>
 
       {/* ── Hero row ── */}
-      <div style={{
+      <div className="landing-hero-row" style={{
         display:'grid',
         gridTemplateColumns:'1fr 1fr',
         gap:48,
@@ -68,7 +68,7 @@ export default function Hero({ onGetStarted }) {
         position:'relative', zIndex:1,
       }}>
         {/* LEFT */}
-        <div className="anim-fadeup" style={{ display:'flex', flexDirection:'column', gap:28 }}>
+        <div className="anim-fadeup landing-hero-copy" style={{ display:'flex', flexDirection:'column', gap:28 }}>
           <h1 style={{
             fontSize:'clamp(36px,5vw,64px)', fontWeight:900,
             lineHeight:1.05, letterSpacing:'-0.04em',
@@ -170,7 +170,7 @@ export default function Hero({ onGetStarted }) {
       </div>
 
       {/* ── Feature Cards (matches screenshot 1 bottom row) ── */}
-      <div style={{
+      <div className="landing-feature-grid" style={{
         maxWidth:1200, margin:'0 auto', width:'100%',
         display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:16,
         position:'relative', zIndex:1,
