@@ -28,3 +28,9 @@ build/
 
 # Coverage
 coverage/
+
+# Database
+*.db
+*.db-journal
+dev.db
+
