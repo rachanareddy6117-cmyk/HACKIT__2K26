@@ -1,19 +1,41 @@
 {
   "name": "echosign-backend",
   "version": "1.0.0",
-  "description": "EchoSign Real-Time Accessibility & Sign Language Platform Backend",
+  "description": "EchoSign — Real-time bidirectional Sign ↔ Speech communication bridge backend",
   "main": "server.js",
-  "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "nodemon server.js"
   },
+  "keywords": [
+    "sign-language",
+    "accessibility",
+    "ISL",
+    "real-time",
+    "AI",
+    "gemini",
+    "claude"
+  ],
+  "author": "EchoSign Team — HakITx MRDU '26",
+  "license": "MIT",
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.26.0",
-    "@google/generative-ai": "^0.17.0",
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@google/generative-ai": "^0.24.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2"
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^11.1.0",
+    "@prisma/client": "^5.22.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "prisma": "^5.22.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

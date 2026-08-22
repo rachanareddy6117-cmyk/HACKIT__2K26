@@ -1,0 +1,43 @@
+// ─────────────────────────────────────────────────────────────
+// EchoSign — Prisma Schema Configuration
+// ─────────────────────────────────────────────────────────────
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id             String        @id @default(uuid())
+  email          String        @unique
+  password       String
+  name           String
+  persona        String        @default("sign_learner")
+  credentialType String        @default("email")
+  faceId         String?
+  voiceId        String?
+  createdAt      DateTime      @default(now())
+  sessions       Session[]
+  chatMessages   ChatMessage[]
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  userId    String
+  role      String   // "user" | "assistant"
+  content   String
+  persona   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
