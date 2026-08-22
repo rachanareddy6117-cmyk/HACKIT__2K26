@@ -4,33 +4,43 @@
  * and python microservice on port 8000.
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+let activeApiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
 const INFERENCE_BASE = import.meta.env.VITE_INFERENCE_URL || 'http://localhost:8000';
 
-async function post(path, body, customBase = API_BASE) {
-  try {
-    const res = await fetch(`${customBase}${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    console.warn(`API POST ${path} notice:`, err.message);
-    return null;
+async function post(path, body, customBase) {
+  const candidateBases = customBase ? [customBase] : [activeApiBase, 'http://localhost:5002', 'http://localhost:5001', 'http://localhost:5000'];
+  for (const base of candidateBases) {
+    try {
+      const res = await fetch(`${base}${path}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        activeApiBase = base;
+        return await res.json();
+      }
+    } catch {
+      // try next candidate
+    }
   }
+  return null;
 }
 
-async function get(path, customBase = API_BASE) {
-  try {
-    const res = await fetch(`${customBase}${path}`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-  } catch (err) {
-    console.warn(`API GET ${path} notice:`, err.message);
-    return null;
+async function get(path, customBase) {
+  const candidateBases = customBase ? [customBase] : [activeApiBase, 'http://localhost:5002', 'http://localhost:5001', 'http://localhost:5000'];
+  for (const base of candidateBases) {
+    try {
+      const res = await fetch(`${base}${path}`);
+      if (res.ok) {
+        activeApiBase = base;
+        return await res.json();
+      }
+    } catch {
+      // try next candidate
+    }
   }
+  return null;
 }
 
 /** Check Server & AI Health */
@@ -137,3 +147,60 @@ export async function predictLandmarks(hand_landmarks) {
     all_gloss_candidates: [{ gloss: 'HELLO', confidence: 0.94 }]
   };
 }
+
+/** Roadmap progress endpoints */
+export async function saveUserProgressApi({ userId = 'demo_user', category = 'deaf_mute', completedModuleId, level, xp }) {
+  // Save in local storage as backup
+  try {
+    const key = `echosign_progress_${userId}_${category}`;
+    const raw = localStorage.getItem(key);
+    const data = raw ? JSON.parse(raw) : { completed: [], xp: 0 };
+    if (!data.completed.includes(completedModuleId)) {
+      data.completed.push(completedModuleId);
+    }
+    data.xp = Math.max(data.xp || 0, xp || 0);
+    data.lastLevel = level || 1;
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch { /* safe */ }
+
+  return post('/api/user/progress', { userId, category, completedModuleId, level, xp });
+}
+
+export async function getUserProgressApi(userId = 'demo_user', category = 'deaf_mute') {
+  let localData = null;
+  try {
+    const key = `echosign_progress_${userId}_${category}`;
+    const raw = localStorage.getItem(key);
+    if (raw) localData = JSON.parse(raw);
+  } catch { /* safe */ }
+
+  const serverResult = await get(`/api/user/progress/${userId}?category=${category}`);
+  if (serverResult && serverResult.success) {
+    return serverResult.progress;
+  }
+
+  return localData || { completed: [], xp: 120, lastLevel: 1 };
+}
+
+export async function getRoadmapLevels(track = 'deaf_mute') {
+  return get(`/api/roadmap/${track}`);
+}
+
+/** Suite Everyday Translation API */
+export async function translateApi(text, mode = 'TEXT') {
+  const serverResult = await post('/api/translator/translate', { text, mode });
+  if (serverResult && serverResult.success) {
+    return serverResult.result;
+  }
+  return {
+    output: `${text.toUpperCase()} 🤟`,
+    speech: text,
+    gloss: text.toUpperCase()
+  };
+}
+
+/** Suite Emergency Broadcast API */
+export async function broadcastEmergencyApi(alertData) {
+  return post('/api/emergency/broadcast', alertData);
+}
+

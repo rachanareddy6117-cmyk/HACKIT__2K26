@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check, Sparkles } from 'lucide-react';
 import Logo from './Logo';
 import { setStoredItem, STORAGE_KEYS } from '../utils/storage';
 
 const PERSONAS = [
-  { id: 'deaf_hoh',         icon: '🤟', label: 'SIGN ↔ SPEECH',        title: 'Deaf / Non-Speaking',       desc: 'Real-time sign communication with captions and speech.',   features: ['Live Camera','Captions','Speech Output'], accent: '#00F2FE' },
-  { id: 'autism_support',   icon: '🧩', label: 'CALM COMMUNICATION',    title: 'Autism Spectrum',           desc: 'A calm and predictable communication experience.',         features: ['Calm Mode','Visual Prompts','AI Support'],   accent: '#9D50BB' },
-  { id: 'introvert_coach',  icon: '🌱', label: 'SOCIAL SUPPORT',        title: 'Introvert Confidence',      desc: 'Practice conversations before real interactions.',         features: ['Coach','Practice','Suggestions'],            accent: '#00F2FE' },
-  { id: 'sign_learner',     icon: '📚', label: 'LEARN & PRACTICE',      title: 'Sign Language Learner',     desc: 'Practice signs and receive instant feedback.',            features: ['Learn Signs','Practice','Feedback'],         accent: '#9D50BB' },
-  { id: 'general_translator',icon: '🌎',label: 'EVERYDAY TRANSLATION',  title: 'General Translator',        desc: 'Translate between speech, text and sign.',                features: ['Speech','Text','Sign'],                      accent: '#00F2FE' },
-  { id: 'explore_all',      icon: '✨', label: 'EXPLORE ECHOSIGN',      title: 'Others',                    desc: 'Explore EchoSign accessibility tools.',                   features: ['AI Assistant','Translation','Tools'],        accent: '#9D50BB' },
+  { id: 'deaf_hoh',         icon: '🤟', label: 'SIGN ↔ SPEECH',        title: 'Deaf & Hard of Hearing',    desc: 'Real-time sign communication with live captions and speech output from PDF 1 Guide.',   features: ['20-Level ASL','Vision Mesh','Captions'], accent: '#00e5ff' },
+  { id: 'autism_support',   icon: '🧩', label: 'CALM COMMUNICATION',    title: 'Autism Spectrum Support',   desc: 'Calm and predictable communication with action symbols from PDF 2 Guide.',              features: ['Sensory Mode','Symbol Prompts','AI Bridge'], accent: '#9d50bb' },
+  { id: 'introvert_coach',  icon: '🌱', label: 'SOCIAL CONFIDENCE',     title: 'Introvert Coach',           desc: 'Practice conversations with micro-scripts before real interactions.',                   features: ['Low Pressure','Practice Scripts','Feedback'], accent: '#00e5ff' },
+  { id: 'sign_learner',     icon: '📚', label: 'LEARN & PRACTICE',      title: 'Sign Language Learner',     desc: 'Interactive camera studio with dotted line skeleton matching and XP.',                  features: ['Dotted Guide','5s Auto Advance','100 Modules'], accent: '#f59e0b' },
+  { id: 'general_translator',icon: '🌎',label: 'EVERYDAY TRANSLATION',  title: 'Everyday Translator',       desc: 'Translate between speech audio, text phrases, and manual signs.',                      features: ['Speech-to-Sign','Sign-to-Speech','TTS'], accent: '#ec4899' },
+  { id: 'explore_all',      icon: '✨', label: 'ACCESSIBILITY SUITE',   title: 'All-in-One Suite',          desc: 'Unified 3-column practice, everyday translation, and emergency alerts.',               features: ['3-Column Suite','Emergency SOS','AI Assist'], accent: '#22c55e' },
 ];
 
 export default function PersonaSelection({ onSelectPersona }) {
@@ -23,22 +23,37 @@ export default function PersonaSelection({ onSelectPersona }) {
 
   return (
     <div
-      className="min-h-screen flex flex-col px-6 py-14 bg-cyber-grid"
-      style={{ background: 'linear-gradient(180deg,#05070A,#0B0E14)' }}
+      className="min-h-screen flex flex-col px-6 py-14 relative overflow-hidden"
+      style={{ background: 'linear-gradient(180deg, #05070a 0%, #0b0e14 100%)', color: '#fff' }}
     >
-      <div className="max-w-5xl mx-auto w-full space-y-10">
+      {/* Background glow blobs */}
+      <div style={{
+        position: 'absolute', top: '-160px', left: '-160px',
+        width: 520, height: 520, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(0,229,255,0.07) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }}/>
+      <div style={{
+        position: 'absolute', bottom: '-120px', right: '-80px',
+        width: 440, height: 440, borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(157,80,187,0.09) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }}/>
+      {/* Cyber Grid */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.5,
+        backgroundImage: 'linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px)',
+        backgroundSize: '44px 44px',
+      }}/>
+
+      <div className="max-w-5xl mx-auto w-full space-y-10 relative z-10">
         <div className="text-center space-y-3">
           <Logo size="medium" className="justify-center mb-4" />
-          <h1 className="text-3xl md:text-4xl font-black text-white tracking-tight">
-            How can EchoSign{' '}
-            <span style={{
-              background: 'linear-gradient(90deg,#00F2FE,#9D50BB)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-            }}>help you?</span>
+          <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight">
+            How can <span className="grad-text">EchoSign</span> help you?
           </h1>
-          <p className="text-sm font-medium" style={{ color: '#94A3B8' }}>
-            Choose a module that matches how you communicate.
+          <p className="text-sm font-medium text-slate-400 max-w-lg mx-auto">
+            Select a tailored communication mode matching your accessibility needs.
           </p>
         </div>
 
@@ -52,46 +67,67 @@ export default function PersonaSelection({ onSelectPersona }) {
                 role="button"
                 tabIndex={0}
                 onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') setSelectedId(p.id); }}
-                className="relative p-6 rounded-3xl flex flex-col gap-4 cursor-pointer transition-all duration-200"
+                className="relative p-6 rounded-3xl flex flex-col justify-between gap-4 cursor-pointer transition-all duration-300 group"
                 style={{
-                  background: isSelected ? `${p.accent}08` : 'rgba(255,255,255,0.03)',
-                  border: isSelected ? `1px solid ${p.accent}50` : '1px solid rgba(255,255,255,0.07)',
+                  background: isSelected ? `${p.accent}10` : 'rgba(255,255,255,0.04)',
+                  border: isSelected ? `2px solid ${p.accent}` : '1px solid rgba(255,255,255,0.08)',
                   backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  boxShadow: isSelected ? `0 0 40px ${p.accent}12` : 'none',
+                  boxShadow: isSelected ? `0 0 36px ${p.accent}25` : '0 4px 20px rgba(0,0,0,0.2)',
+                  transform: isSelected ? 'translateY(-3px)' : 'none',
+                }}
+                onMouseEnter={e => {
+                  if (!isSelected) {
+                    e.currentTarget.style.border = `1px solid ${p.accent}50`;
+                    e.currentTarget.style.boxShadow = `0 0 28px ${p.accent}15`;
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isSelected) {
+                    e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)';
+                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.2)';
+                    e.currentTarget.style.transform = 'none';
+                  }
                 }}
               >
                 {/* Check Badge */}
                 {isSelected && (
                   <div
-                    className="absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center"
-                    style={{ background: p.accent, boxShadow: `0 0 14px ${p.accent}60` }}
+                    className="absolute top-4 right-4 w-7 h-7 rounded-full flex items-center justify-center shadow-lg"
+                    style={{ background: p.accent, color: '#000' }}
                   >
-                    <Check className="w-4 h-4 text-black" strokeWidth={3} />
+                    <Check className="w-4 h-4" strokeWidth={3} />
                   </div>
                 )}
 
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">{p.icon}</span>
-                  <div>
-                    <span
-                      className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
-                      style={{ background: `${p.accent}14`, color: p.accent, border: `1px solid ${p.accent}30` }}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
+                      style={{ background: `${p.accent}18`, border: `1px solid ${p.accent}35` }}
                     >
-                      {p.label}
-                    </span>
-                    <h3 className="text-base font-bold text-white mt-1">{p.title}</h3>
+                      {p.icon}
+                    </div>
+                    <div>
+                      <span
+                        className="text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
+                        style={{ background: `${p.accent}14`, color: p.accent, border: `1px solid ${p.accent}30` }}
+                      >
+                        {p.label}
+                      </span>
+                      <h3 className="text-base font-bold text-white mt-1 group-hover:text-cyan-300 transition-colors">{p.title}</h3>
+                    </div>
                   </div>
+
+                  <p className="text-xs leading-relaxed text-slate-400">{p.desc}</p>
                 </div>
 
-                <p className="text-xs leading-relaxed" style={{ color: '#94A3B8' }}>{p.desc}</p>
-
-                <div className="flex flex-wrap gap-1.5 pt-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                <div className="flex flex-wrap gap-1.5 pt-3 border-t border-white/10">
                   {p.features.map(f => (
                     <span
                       key={f}
                       className="text-[10px] font-bold px-2.5 py-1 rounded-lg"
-                      style={{ background: 'rgba(255,255,255,0.05)', color: '#94A3B8' }}
+                      style={{ background: 'rgba(255,255,255,0.05)', color: '#94a3b8' }}
                     >
                       {f}
                     </span>
@@ -105,14 +141,18 @@ export default function PersonaSelection({ onSelectPersona }) {
         <div className="flex justify-center pt-2">
           <button
             onClick={handleConfirm}
-            className="px-10 py-4 rounded-2xl font-bold text-base flex items-center gap-3 transition-all"
+            className="px-10 py-4 rounded-2xl font-bold text-base flex items-center gap-3 transition-all cursor-pointer"
             style={{
-              background: 'linear-gradient(135deg,#00F2FE,#9D50BB)',
+              background: 'linear-gradient(135deg,#00e5ff,#9d50bb)',
               color: '#fff',
-              boxShadow: '0 0 40px rgba(0,242,254,0.25)',
+              border: 'none',
+              boxShadow: '0 0 30px rgba(0,229,255,0.35)',
             }}
+            onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 0 44px rgba(0,229,255,0.55)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 0 30px rgba(0,229,255,0.35)'; e.currentTarget.style.transform = 'none'; }}
           >
-            Continue to Dashboard <ArrowRight className="w-5 h-5" />
+            <span>Continue to Dashboard</span>
+            <ArrowRight className="w-5 h-5" />
           </button>
         </div>
       </div>

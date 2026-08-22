@@ -27,7 +27,24 @@ const FEATURES = [
   { icon: Hand,     label:'Hands',    color:'#ec4899' },
 ];
 
-export default function Hero({ onGetStarted }) {
+export default function Hero({ onGetStarted, onSeeHowItWorks }) {
+  const [activeSignIdx, setActiveSignIdx] = React.useState(0);
+  const DEMO_SIGNS = [
+    { title: 'HELLO 👋', label: '— Detected Sign' },
+    { title: 'I LOVE YOU 🤟', label: '— ASL Expression' },
+    { title: 'THUMBS UP 👍', label: '— Affirmative' },
+    { title: 'PEACE ✌️', label: '— Victory / Two' },
+  ];
+
+  React.useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveSignIdx(i => (i + 1) % DEMO_SIGNS.length);
+    }, 2800);
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentSign = DEMO_SIGNS[activeSignIdx];
+
   return (
     <section className="landing-hero" style={{
       minHeight:'calc(100vh - 64px)',
@@ -79,8 +96,7 @@ export default function Hero({ onGetStarted }) {
           </h1>
 
           <p style={{ fontSize:15, lineHeight:1.7, color:'#94a3b8', maxWidth:480 }}>
-            Transform sign language into meaningful conversation with real-time
-            AI-powered recognition, translation, and accessibility tools.
+            Real-time sign language AI and multi-modal accessibility bridge connecting speech, text, and gestures seamlessly.
           </p>
 
           <div style={{ display:'flex', gap:14, flexWrap:'wrap' }}>
@@ -96,18 +112,22 @@ export default function Hero({ onGetStarted }) {
             onMouseLeave={e=>{e.currentTarget.style.boxShadow='0 0 30px rgba(0,229,255,0.35)';e.currentTarget.style.transform='none';}}
             >Get Started</button>
 
-            <button style={{
-              background:'rgba(255,255,255,0.05)',
-              color:'#fff', cursor:'pointer',
-              padding:'13px 30px', borderRadius:14,
-              fontSize:15, fontWeight:600,
-              border:'1px solid rgba(255,255,255,0.12)',
-              backdropFilter:'blur(12px)',
-              transition:'all .2s',
-            }}
-            onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,0.09)';}}
-            onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,0.05)';}}
-            >See How It Works</button>
+            <button
+              onClick={onSeeHowItWorks}
+              style={{
+                background:'rgba(255,255,255,0.05)',
+                color:'#fff', cursor:'pointer',
+                padding:'13px 30px', borderRadius:14,
+                fontSize:15, fontWeight:600,
+                border:'1px solid rgba(255,255,255,0.12)',
+                backdropFilter:'blur(12px)',
+                transition:'all .2s',
+              }}
+              onMouseEnter={e=>{e.currentTarget.style.background='rgba(255,255,255,0.09)';}}
+              onMouseLeave={e=>{e.currentTarget.style.background='rgba(255,255,255,0.05)';}}
+            >
+              See How It Works
+            </button>
           </div>
         </div>
 
@@ -161,8 +181,8 @@ export default function Hero({ onGetStarted }) {
                 backdropFilter:'blur(12px)',
                 textAlign:'center', whiteSpace:'nowrap', zIndex:3,
               }}>
-                <span style={{ color:'#00e5ff', fontWeight:800, fontSize:15 }}>HELLO 👋</span>
-                <span style={{ color:'#94a3b8', fontSize:11, marginLeft:8 }}>— Detected Sign</span>
+                <span style={{ color:'#00e5ff', fontWeight:800, fontSize:15 }}>{currentSign.title}</span>
+                <span style={{ color:'#94a3b8', fontSize:11, marginLeft:8 }}>{currentSign.label}</span>
               </div>
             </div>
           </div>

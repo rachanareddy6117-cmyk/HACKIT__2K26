@@ -5,10 +5,10 @@
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
-    "dev": "concurrently \"node server.js\" \"vite --host 0.0.0.0 --port 5173\"",
+    "dev": "concurrently \"node --no-warnings server.js\" \"node --no-warnings ./node_modules/vite/bin/vite.js --host 0.0.0.0 --port 5173\"",
     "build": "vite build",
-    "start": "node server.js",
-    "preview": "vite preview --host 0.0.0.0 --port 4173"
+    "start": "node --no-warnings server.js",
+    "preview": "node --no-warnings ./node_modules/vite/bin/vite.js preview --host 0.0.0.0 --port 4173"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.26.1",

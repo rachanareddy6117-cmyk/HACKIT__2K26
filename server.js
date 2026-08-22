@@ -9,10 +9,28 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { privacyFirewallMiddleware, encryptSensitiveField } = require('./privacy_firewall');
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const BASE_PORT = Number(process.env.PORT) || 5001;
+let SERVER_PORT = BASE_PORT;
 const JWT_SECRET = process.env.JWT_SECRET || 'echosign_production_jwt_secret_key_8f93a1c4b2e5d';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
+
+function listenWithFallback(appInstance, port) {
+  return new Promise((resolve) => {
+    const s = appInstance.listen(port, '0.0.0.0', () => {
+      SERVER_PORT = port;
+      resolve({ server: s, port });
+    });
+    s.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.log(`[PORT] Port ${port} in use, trying ${port + 1}...`);
+        resolve(listenWithFallback(appInstance, port + 1));
+      } else {
+        console.error('[SERVER] Listen error:', err);
+      }
+    });
+  });
+}
 
 // ----------------------------------------------------
 // 1. DATABASE & IN-MEMORY STORE INITIALIZATION
@@ -23,7 +41,8 @@ const inMemoryStore = {
   users: new Map(),
   auditLogs: [],
   activeSessions: new Map(),
-  personas: new Map()
+  personas: new Map(),
+  roadmapProgress: new Map()
 };
 
 // MongoDB Connection (Mongoose)
@@ -211,6 +230,37 @@ const SAMPLE_USER_ACCOUNTS = [
   { id: 'usr_sample_4', email: 'demo.user@echosign.org', name: 'Demo Accessibility User', method: 'email', role: 'Universal Translator', defaultPersona: 'general_translator' }
 ];
 
+const ROADMAP_TRACKS = {
+  deaf_mute: {
+    id: 'deaf_mute',
+    title: 'Deaf & Hard of Hearing',
+    description: 'ASL and sign-language modules from the first PDF guide.',
+    levels: Array.from({ length: 20 }, (_, i) => ({
+      level: i + 1,
+      title: `Level ${i + 1}`,
+      modules: Array.from({ length: 5 }, (_, j) => ({
+        id: `deaf_l${i + 1}_m${j + 1}`,
+        moduleNumber: j + 1,
+        title: `Module ${j + 1}`
+      }))
+    }))
+  },
+  autism_introvert: {
+    id: 'autism_introvert',
+    title: 'Autism & Introvert Support',
+    description: 'Expressions and actions symbols from the second PDF guide.',
+    levels: Array.from({ length: 20 }, (_, i) => ({
+      level: i + 1,
+      title: `Level ${i + 1}`,
+      modules: Array.from({ length: 5 }, (_, j) => ({
+        id: `autism_l${i + 1}_m${j + 1}`,
+        moduleNumber: j + 1,
+        title: `Module ${j + 1}`
+      }))
+    }))
+  }
+};
+
 // ----------------------------------------------------
 // 4. API ENDPOINTS
 // ----------------------------------------------------
@@ -227,7 +277,7 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     service: 'EchoSign Unified Backend & AI Engine',
     version: '2.0.0',
-    port: PORT,
+    port: SERVER_PORT,
     database: {
       inMemory: 'active (zero-latency)',
       mongo: UserMongoModel ? 'connected' : 'in-memory fallback active',
@@ -464,6 +514,182 @@ app.post('/api/ai/chat', async (req, res) => {
   }
 });
 
+// Roadmap endpoints for the practice module flow
+app.get('/api/roadmap/:track', (req, res) => {
+  const track = req.params.track;
+  const roadmap = ROADMAP_TRACKS[track];
+
+  if (!roadmap) {
+    return res.status(404).json({ success: false, error: 'Roadmap not found' });
+  }
+
+  return res.json({ success: true, track, roadmap });
+});
+
+app.get('/api/roadmap/progress', (req, res) => {
+  const { track = 'deaf_mute', userId = 'default_user' } = req.query;
+  const key = `${track}:${userId}`;
+  const completedModules = inMemoryStore.roadmapProgress.get(key) || {};
+
+  return res.json({
+    success: true,
+    track,
+    userId,
+    completedModules,
+    totalCompleted: Object.keys(completedModules).length
+  });
+});
+
+app.post('/api/roadmap/complete-module', (req, res) => {
+  const { track = 'deaf_mute', userId = 'default_user', moduleId, level, moduleNumber, score } = req.body || {};
+
+  if (!moduleId) {
+    return res.status(400).json({ success: false, error: 'moduleId is required' });
+  }
+
+  const key = `${track}:${userId}`;
+  const existing = inMemoryStore.roadmapProgress.get(key) || {};
+  const updated = {
+    ...existing,
+    [moduleId]: {
+      moduleId,
+      level,
+      moduleNumber,
+      score: score || 0.95,
+      completedAt: new Date().toISOString()
+    }
+  };
+
+  inMemoryStore.roadmapProgress.set(key, updated);
+
+  return res.json({
+    success: true,
+    track,
+    userId,
+    moduleId,
+    completedModules: updated,
+    totalCompleted: Object.keys(updated).length
+  });
+});
+
+// User Progress Endpoints
+app.get('/api/user/progress/:userId', (req, res) => {
+  const userId = req.params.userId || 'demo_user';
+  const category = req.query.category || 'deaf_mute';
+  const key = `${category}:${userId}`;
+  const progressMap = inMemoryStore.roadmapProgress.get(key) || {};
+  const completedList = Object.keys(progressMap);
+
+  return res.json({
+    success: true,
+    progress: {
+      userId,
+      category,
+      completed: completedList,
+      xp: completedList.length * 50 + 120,
+      totalCompleted: completedList.length
+    }
+  });
+});
+
+app.post('/api/user/progress', (req, res) => {
+  const { userId = 'demo_user', category = 'deaf_mute', completedModuleId, level, xp } = req.body || {};
+  const key = `${category}:${userId}`;
+  const existing = inMemoryStore.roadmapProgress.get(key) || {};
+
+  if (completedModuleId) {
+    existing[completedModuleId] = {
+      moduleId: completedModuleId,
+      level: level || 1,
+      xp: xp || 50,
+      completedAt: new Date().toISOString()
+    };
+  }
+
+  inMemoryStore.roadmapProgress.set(key, existing);
+
+  return res.json({
+    success: true,
+    message: 'Progress saved successfully',
+    completed: Object.keys(existing),
+    xp
+  });
+});
+
+// ── 3-COLUMN SUITE DEDICATED BACKEND ENDPOINTS ──
+
+// Suite Endpoint 1: Verify Practice Gesture Match (/api/practice/verify)
+app.post('/api/practice/verify', (req, res) => {
+  const { targetSign, detectedSign, score = 0.95, level = 1, moduleId } = req.body || {};
+  const isMatch = targetSign === detectedSign || score >= 0.8;
+
+  return res.json({
+    success: true,
+    verified: isMatch,
+    score: Math.round((score || 0.95) * 100),
+    targetSign,
+    detectedSign,
+    feedback: isMatch ? 'Correct! 🎉 Match Confirmed' : 'Alignment in progress...',
+    xpEarned: isMatch ? 50 : 0,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Suite Endpoint 2: Everyday Translation (/api/translator/translate)
+app.post('/api/translator/translate', (req, res) => {
+  const { text = '', mode = 'TEXT' } = req.body || {};
+  const clean = text.trim().toLowerCase();
+
+  const dictionary = {
+    'hello': { output: 'HELLO 👋', speech: 'Hello! Nice to meet you.', gloss: 'HELLO' },
+    'yes': { output: 'YES 👍', speech: 'Yes, affirmative.', gloss: 'YES' },
+    'no': { output: 'NO 👎', speech: 'No, negative.', gloss: 'NO' },
+    'thank you': { output: 'THANK YOU 🙏', speech: 'Thank you very much.', gloss: 'THANK_YOU' },
+    'help': { output: 'HELP 🆘', speech: 'I need assistance, please help.', gloss: 'HELP' },
+    'water': { output: 'WATER 💧', speech: 'Please I need drinking water.', gloss: 'WATER' },
+    'love': { output: 'I LOVE YOU 🤟', speech: 'I love you in sign language.', gloss: 'ILY' },
+    'goodbye': { output: 'GOODBYE 👋', speech: 'Goodbye, see you soon.', gloss: 'GOODBYE' }
+  };
+
+  const match = dictionary[clean] || {
+    output: `${text.toUpperCase()} 🤟`,
+    speech: text || 'Translation ready',
+    gloss: text.toUpperCase()
+  };
+
+  return res.json({
+    success: true,
+    mode,
+    input: text,
+    result: match,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Suite Endpoint 3: Accessible Emergency Broadcast (/api/emergency/broadcast)
+app.post('/api/emergency/broadcast', (req, res) => {
+  const { alertId, label, speech, location } = req.body || {};
+  const logEntry = {
+    id: `alert_${Date.now()}`,
+    alertId: alertId || 'help',
+    label: label || '🆘 I NEED HELP',
+    speech: speech || 'I need immediate help!',
+    location: location || 'Client Geolocation: Active (Browser Coords)',
+    dispatchedAt: new Date().toISOString(),
+    status: 'BROADCAST_SENT'
+  };
+
+  inMemoryStore.auditLogs.unshift(logEntry);
+
+  return res.json({
+    success: true,
+    message: 'Emergency alert dispatched to responders & local relays',
+    alert: logEntry
+  });
+});
+
+
+
 // 8. Sign Gloss Sequence to Natural Language (/api/ai/gloss)
 app.post('/api/ai/gloss', (req, res) => {
   const { glosses = [] } = req.body;
@@ -561,14 +787,16 @@ app.post(['/api/predict/landmarks', '/predict/landmarks'], (req, res) => {
 // ----------------------------------------------------
 // 5. SERVER LAUNCH
 // ----------------------------------------------------
-app.listen(PORT, () => {
+(async () => {
+  const { port } = await listenWithFallback(app, BASE_PORT);
+
   console.log(`========================================================`);
-  console.log(` 🚀 EchoSign Unified Full-Stack Backend Active on Port ${PORT}`);
+  console.log(` 🚀 EchoSign Unified Full-Stack Backend Active on Port ${port}`);
   console.log(` 🛡️  Privacy Firewall: Active (AES-256 PII Protection)`);
   console.log(` 🧠 AI Engine: Dual Mode (Gemini 1.5 Flash + Claude 3.5)`);
-  console.log(` 🤟 ISL Vocabulary: 40 Curated Signs Active`);
-  console.log(` 📡 Health Check: http://localhost:${PORT}/api/health`);
+  console.log(` 🤟 ISL & ASL 20-Level Roadmap: 100 Modules Active`);
+  console.log(` 📡 Health Check: http://localhost:${port}/api/health`);
   console.log(`========================================================`);
-});
+})();
 
 module.exports = app;

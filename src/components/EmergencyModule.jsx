@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ShieldAlert, Volume2 } from 'lucide-react';
+import { ShieldAlert, Volume2, Radio } from 'lucide-react';
+import { broadcastEmergencyApi } from '../services/api';
 
 const ACTIONS = [
   { id:'help',     label:'🆘 I NEED HELP',    speech:'I need immediate help!',                  color:'#ef4444' },
@@ -17,6 +18,12 @@ export default function EmergencyModule() {
     setActive(a);
     window.speechSynthesis?.cancel();
     window.speechSynthesis?.speak(new SpeechSynthesisUtterance(a.speech));
+    broadcastEmergencyApi({
+      alertId: a.id,
+      label: a.label,
+      speech: a.speech,
+      location: 'User Geolocation Coordinates: Active'
+    }).catch(() => {});
   };
 
   return (
@@ -24,10 +31,10 @@ export default function EmergencyModule() {
       {/* Header */}
       <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start' }}>
         <div>
-          <div style={{ fontSize:11, fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:4 }}>
-            Emergency Module
+          <div style={{ fontSize:11, fontWeight:800, color:'#F87171', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:4 }}>
+            RIGHT THIRD • Emergency Module
           </div>
-          <h2 style={{ fontSize:22, fontWeight:800, color:'#fff' }}>Accessible Emergency Alerts</h2>
+          <h2 style={{ fontSize:20, fontWeight:900, color:'#fff' }}>Accessible Emergency Alerts</h2>
         </div>
         <div style={{
           width:38, height:38, borderRadius:12,

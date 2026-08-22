@@ -63,12 +63,19 @@ export default function App() {
     setScreen('landing');
   };
 
+  const handleSeeHowItWorks = () => {
+    setUser({ id: 'demo_user', name: 'Demo Accessibility Explorer', email: 'demo@echosign.org' });
+    setSelectedPersona({ id: 'deaf_mute', title: 'Deaf / Non-Speaking', icon: '🤟' });
+    setScreen('dashboard');
+  };
+
   return (
     <div style={{ minHeight: '100vh', background: '#0B0E14', color: '#ffffff', fontFamily: 'inherit' }}>
       {screen === 'landing' && (
         <Landing
           onGetStarted={() => handleStartAuth('signup')}
           onLogin={() => handleStartAuth('login')}
+          onSeeHowItWorks={handleSeeHowItWorks}
         />
       )}
 

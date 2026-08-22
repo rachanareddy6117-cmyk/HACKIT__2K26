@@ -1,29 +1,33 @@
 import React, { useState } from 'react';
-import { Volume2, ArrowRight } from 'lucide-react';
-import { DEMO_TRANSLATIONS } from '../utils/gestureData';
+import { Volume2, ArrowRight, Sparkles } from 'lucide-react';
+import { translateApi } from '../services/api';
 
 const TABS = ['TEXT', 'SPEECH', 'SIGN'];
 
 export default function TranslatorModule() {
   const [tab,    setTab]    = useState('TEXT');
-  const [input,  setInput]  = useState('');
-  const [result, setResult] = useState(null);
+  const [input,  setInput]  = useState('Hello');
+  const [result, setResult] = useState({
+    output: 'HELLO 👋',
+    speech: 'Hello! Nice to meet you.'
+  });
   const [loading, setLoading] = useState(false);
 
-  const translate = (e) => {
+  const translate = async (e) => {
     e?.preventDefault();
     if (!input.trim()) return;
     setLoading(true);
-    setTimeout(() => {
-      const key = input.trim().toLowerCase();
-      const res = DEMO_TRANSLATIONS[key] || {
-        sign: 'OPEN_HAND',
-        output: input.toUpperCase() + ' 🤟',
-        speech: input,
-      };
+    try {
+      const res = await translateApi(input.trim(), tab);
       setResult(res);
+    } catch {
+      setResult({
+        output: `${input.toUpperCase()} 🤟`,
+        speech: input
+      });
+    } finally {
       setLoading(false);
-    }, 300);
+    }
   };
 
   const speak = () => {
@@ -36,10 +40,10 @@ export default function TranslatorModule() {
     <div style={{ display:'flex', flexDirection:'column', gap:18, height:'100%' }}>
       {/* Header */}
       <div>
-        <div style={{ fontSize:11, fontWeight:700, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:4 }}>
-          Translator Module
+        <div style={{ fontSize:11, fontWeight:800, color:'#A78BFA', textTransform:'uppercase', letterSpacing:'0.1em', marginBottom:4 }}>
+          MIDDLE THIRD • Translator Module
         </div>
-        <h2 style={{ fontSize:22, fontWeight:800, color:'#fff' }}>Everyday Translation</h2>
+        <h2 style={{ fontSize:20, fontWeight:900, color:'#fff' }}>Everyday Translation</h2>
       </div>
 
       {/* Tabs */}
@@ -51,7 +55,7 @@ export default function TranslatorModule() {
       }}>
         {TABS.map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
-            padding:'6px 16px', borderRadius:9, border:'none',
+            padding:'6px 16px', borderRadius:9,
             fontSize:12, fontWeight:700, cursor:'pointer',
             background: tab === t
               ? 'linear-gradient(135deg,rgba(0,229,255,0.18),rgba(157,80,187,0.18))'

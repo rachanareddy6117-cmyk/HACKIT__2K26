@@ -5,22 +5,26 @@ import ChatPanel from './ChatPanel';
 import Practice from './Practice';
 import Translator from './Translator';
 import Emergency from './Emergency';
+import PracticeModule from './PracticeModule';
+import TranslatorModule from './TranslatorModule';
+import EmergencyModule from './EmergencyModule';
 import Logo from './Logo';
 import {
-  MessageSquare, Award, Globe, ShieldAlert, LogOut, User, Menu, X, Activity, CheckCircle2, AlertCircle
+  MessageSquare, Award, Globe, ShieldAlert, LogOut, User, Menu, X, Activity, LayoutGrid, Sparkles
 } from 'lucide-react';
 import { clearSession } from '../utils/storage';
 import { checkBackendHealth } from '../services/api';
 
 const NAV_ITEMS = [
-  { id: 'conversation', label: 'Conversation', icon: MessageSquare },
-  { id: 'practice',     label: 'Practice',     icon: Award },
-  { id: 'translate',    label: 'Translate',     icon: Globe },
-  { id: 'emergency',    label: 'Emergency',     icon: ShieldAlert, red: true },
+  { id: 'suite',        label: '3-Column Suite', icon: LayoutGrid },
+  { id: 'practice',     label: 'Practice (20 Lvl)', icon: Award },
+  { id: 'conversation', label: 'Conversation',   icon: MessageSquare },
+  { id: 'translate',    label: 'Translate',       icon: Globe },
+  { id: 'emergency',    label: 'Emergency',       icon: ShieldAlert, red: true },
 ];
 
 export default function Dashboard({ user, persona, onLogout, onChangePersona }) {
-  const [activeTab,       setActiveTab]       = useState('conversation');
+  const [activeTab,       setActiveTab]       = useState('suite');
   const [mobileMenuOpen,  setMobileMenuOpen]  = useState(false);
   const [backendHealth,   setBackendHealth]   = useState({ status: 'checking', message: 'Connecting to API...' });
   const [liveGlosses,     setLiveGlosses]     = useState([]);
@@ -34,13 +38,13 @@ export default function Dashboard({ user, persona, onLogout, onChangePersona }) 
         const res = await checkBackendHealth();
         if (mounted) {
           if (res && res.status === 'healthy') {
-            setBackendHealth({ status: 'connected', port: res.port || 5001, service: res.service });
+            setBackendHealth({ status: 'connected', port: res.port || 5002, service: res.service });
           } else {
-            setBackendHealth({ status: 'fallback', port: 5001, message: 'In-Memory Simulation Ready' });
+            setBackendHealth({ status: 'fallback', port: 5002, message: 'In-Memory Store Active' });
           }
         }
       } catch {
-        if (mounted) setBackendHealth({ status: 'fallback', port: 5001, message: 'In-Memory Simulation Ready' });
+        if (mounted) setBackendHealth({ status: 'fallback', port: 5002, message: 'In-Memory Store Active' });
       }
     };
 
@@ -104,7 +108,7 @@ export default function Dashboard({ user, persona, onLogout, onChangePersona }) 
             }}
           >
             <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ background: backendHealth.status === 'connected' ? '#22c55e' : '#00F2FE' }} />
-            <span>API {backendHealth.status === 'connected' ? `Online (:5001)` : 'Simulated Active'}</span>
+            <span>API {backendHealth.status === 'connected' ? `Online (:5002)` : 'Active (:5002)'}</span>
           </div>
         </div>
 
@@ -199,8 +203,8 @@ export default function Dashboard({ user, persona, onLogout, onChangePersona }) 
               <Activity className="w-3 h-3 text-cyan-400" />
               <span>Full-Stack Status</span>
             </div>
-            <div>• Express Server: <span className="text-green-400">Port 5001</span></div>
-            <div>• Inference API: <span className="text-cyan-400">Port 8000</span></div>
+            <div>• Express Server: <span className="text-green-400">Port 5002</span></div>
+            <div>• Dual AI Models: <span className="text-cyan-400">Active</span></div>
             <div>• Privacy Firewall: <span className="text-purple-400">AES-256</span></div>
           </div>
         </aside>
@@ -208,7 +212,80 @@ export default function Dashboard({ user, persona, onLogout, onChangePersona }) 
         {/* Main Content Area */}
         <main className="md:col-span-10 min-h-0">
 
-          {/* CONVERSATION */}
+          {/* ── VIEW: 3-COLUMN ACCESSIBILITY SUITE (EXACT IMAGE 2 REPRODUCTION) ── */}
+          {activeTab === 'suite' && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-black text-white">EchoSign Real-Time Accessibility Suite</h1>
+                  <p className="text-xs text-slate-400">Unified 3-Module Vision, Translation, and Emergency Assistance.</p>
+                </div>
+                <button
+                  onClick={() => setActiveTab('practice')}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white transition-all flex items-center gap-2 cursor-pointer"
+                  style={{ background: 'linear-gradient(135deg,#00F2FE,#9D50BB)', boxShadow: '0 0 20px rgba(0,242,254,0.25)' }}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Open 20-Level Curriculum Studio →</span>
+                </button>
+              </div>
+
+              {/* 3 Columns: Left Third, Middle Third, Right Third */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-stretch">
+                {/* LEFT THIRD: Practice Module */}
+                <div
+                  className="p-6 rounded-3xl flex flex-col justify-between h-full"
+                  style={{
+                    minHeight: 580,
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(0,229,255,0.2)',
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: '0 8px 32px rgba(0,229,255,0.08)',
+                  }}
+                >
+                  <PracticeModule />
+                </div>
+
+                {/* MIDDLE THIRD: Translator Module */}
+                <div
+                  className="p-6 rounded-3xl flex flex-col justify-between h-full"
+                  style={{
+                    minHeight: 580,
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(157,80,187,0.2)',
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: '0 8px 32px rgba(157,80,187,0.08)',
+                  }}
+                >
+                  <TranslatorModule />
+                </div>
+
+                {/* RIGHT THIRD: Emergency Module */}
+                <div
+                  className="p-6 rounded-3xl flex flex-col justify-between h-full"
+                  style={{
+                    minHeight: 580,
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(239,68,68,0.25)',
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: '0 8px 32px rgba(239,68,68,0.08)',
+                  }}
+                >
+                  <EmergencyModule />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ── VIEW: 20-LEVEL PRACTICE STUDIO (MATCHING PDF GUIDES & DOTTED SKELETON) ── */}
+          {activeTab === 'practice' && (
+            <Practice
+              initialCategory={persona?.id || 'deaf_mute'}
+              user={user}
+            />
+          )}
+
+          {/* ── VIEW: LIVE CONVERSATION & CHATBOT ── */}
           {activeTab === 'conversation' && (
             <div className="space-y-4 h-full flex flex-col">
               <div>
@@ -237,9 +314,11 @@ export default function Dashboard({ user, persona, onLogout, onChangePersona }) 
             </div>
           )}
 
-          {activeTab === 'practice'   && <Practice />}
-          {activeTab === 'translate'  && <Translator />}
-          {activeTab === 'emergency'  && <Emergency />}
+          {/* ── VIEW: TRANSLATOR ── */}
+          {activeTab === 'translate' && <Translator />}
+
+          {/* ── VIEW: EMERGENCY ── */}
+          {activeTab === 'emergency' && <Emergency />}
 
         </main>
       </div>
