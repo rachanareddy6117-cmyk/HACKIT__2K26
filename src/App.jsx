@@ -5,7 +5,7 @@ import {
   HeartHandshake, Brain, Smile, Globe, Send, CheckCircle2, AlertCircle, Eye
 } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = 'http://localhost:3000';
 const INFERENCE_URL = 'http://localhost:8000';
 
 const PERSONAS = [
@@ -63,6 +63,7 @@ export default function App() {
   // Auth State
   const [authMethod, setAuthMethod] = useState('email'); // 'email' | 'face_id' | 'voice_id'
   const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authToken, setAuthToken] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
@@ -97,19 +98,24 @@ export default function App() {
   // Handle Authentication
   const handleLogin = async (e) => {
     e?.preventDefault();
-    const loginId = identifier.trim() || (authMethod === 'email' ? 'user@echosign.org' : `${authMethod}_user_88`);
+    const loginId = identifier.trim() || (authMethod === 'email' ? 'demo@echosign.dev' : `${authMethod}_user_88`);
     setIsAuthenticating(true);
 
     try {
+      const credentials = authMethod === 'email'
+        ? { credentialType: 'email', email: loginId, password: password || 'echosign2026' }
+        : authMethod === 'face_id'
+          ? { credentialType: 'face_id', faceId: loginId }
+          : { credentialType: 'voice_id', voiceId: loginId };
       const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ authType: authMethod, identifier: loginId })
+        body: JSON.stringify(credentials)
       });
       const data = await res.json();
-      if (data.success) {
-        setAuthToken(data.token);
-        setUserProfile(data.user);
+      if (data.success && data.data) {
+        setAuthToken(data.data.token);
+        setUserProfile(data.data.user);
         setStep('persona');
       }
     } catch (err) {
@@ -130,9 +136,12 @@ export default function App() {
 
     try {
       await fetch(`${API_BASE_URL}/api/user/persona`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ category: personaId })
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ persona: personaId })
       });
     } catch (err) {
       console.warn('Persona route warning:', err);
@@ -296,11 +305,13 @@ export default function App() {
     try {
       const res = await fetch(`${API_BASE_URL}/api/ai/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        },
         body: JSON.stringify({
-          message: userText,
-          personaCategory: selectedPersona,
-          liveGlosses: currentGlosses
+          message: userText || `Sign Language Gloss: [ ${currentGlosses.join(' ')} ]`,
+          mode: selectedPersona
         })
       });
       const data = await res.json();
@@ -308,8 +319,8 @@ export default function App() {
       const aiMsgObj = {
         id: Date.now() + 1,
         sender: 'ai',
-        text: data.reply || 'Response received.',
-        provider: data.provider || 'EchoSign AI',
+        text: data.data?.response || 'Response received.',
+        provider: data.data?.provider || 'EchoSign AI',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setMessages(prev => [...prev, aiMsgObj]);
@@ -397,10 +408,17 @@ export default function App() {
                   <label style={styles.label}>Email or User Handle</label>
                   <input 
                     type="email" 
-                    placeholder="user@echosign.org" 
+                    placeholder="demo@echosign.dev" 
                     value={identifier} 
                     onChange={e => setIdentifier(e.target.value)}
                     style={styles.inputField} 
+                  />
+                  <input
+                    type="password"
+                    placeholder="Password (demo: echosign2026)"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    style={{ ...styles.inputField, marginTop: 12 }}
                   />
                 </div>
               )}
