@@ -3,465 +3,58 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EchoSign</title>
-    <style>
-      :root {
-        --bg: #050a12;
-        --bg-2: #0a1220;
-        --panel: rgba(255,255,255,0.04);
-        --panel-border: rgba(255,255,255,0.08);
-        --cyan: #00e5ff;
-        --purple: #b26cff;
-        --text: #ffffff;
-        --muted: #98a7ba;
-      }
+    <title>EchoSign — Real-Time Sign Language & Adaptive AI Accessibility</title>
+    <meta name="description" content="EchoSign: Real-time sign language gloss translation, MediaPipe computer vision inference, and adaptive AI persona coaching." />
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-      * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
+    <!-- Tailwind CDN for Instant High-Fidelity UI Layouts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              cyber: {
+                cyan: '#00F2FE',
+                purple: '#9D50BB',
+                dark: '#0B0E14',
+                surface: '#0F172A',
+                panel: 'rgba(255,255,255,0.04)',
+                border: 'rgba(255,255,255,0.08)',
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
       body {
         margin: 0;
-        background: radial-gradient(circle at top left, rgba(0,229,255,0.12), transparent 22%),
-                    radial-gradient(circle at bottom right, rgba(178,108,255,0.14), transparent 28%),
-                    linear-gradient(180deg, #050a12 0%, #0a1220 100%);
-        color: var(--text);
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #0B0E14;
+        color: #ffffff;
+        font-family: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
+        overflow-x: hidden;
       }
-
-      .page {
-        min-height: 100vh;
-        padding: 20px 30px 40px;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .page::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background-image:
-          linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
-        background-size: 44px 44px;
-        mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
-        pointer-events: none;
-      }
-
-      .nav {
-        position: relative;
-        z-index: 1;
-        max-width: 1250px;
-        margin: 0 auto 32px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-      }
-
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-weight: 700;
-        letter-spacing: -0.04em;
-        font-size: 1.1rem;
-      }
-
-      .brand-mark {
-        width: 18px;
-        height: 18px;
-        border-radius: 6px;
-        background: linear-gradient(135deg, rgba(0, 229, 255, 0.8), rgba(178,108,255,0.8));
-        box-shadow: 0 0 18px rgba(0,229,255,0.6);
-      }
-
-      .nav-links {
-        display: flex;
-        gap: 30px;
-        align-items: center;
-        color: var(--muted);
-        font-size: 0.8rem;
-      }
-
-      .nav-links a {
-        color: var(--muted);
-        text-decoration: none;
-      }
-
-      .nav-cta {
-        background: linear-gradient(135deg, var(--cyan), var(--purple));
-        border: none;
-        border-radius: 12px;
-        color: white;
-        font-weight: 700;
-        padding: 10px 18px;
-        cursor: pointer;
-        box-shadow: 0 0 24px rgba(0,229,255,0.35);
-      }
-
-      .hero {
-        position: relative;
-        z-index: 1;
-        max-width: 1250px;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: 1.05fr 0.95fr;
-        gap: 42px;
-        align-items: center;
-      }
-
-      .headline {
-        font-size: clamp(2.8rem, 5vw, 6rem);
-        line-height: 0.92;
-        letter-spacing: -0.06em;
-        font-weight: 800;
-        margin: 0 0 18px;
-      }
-
-      .headline .gradient {
-        display: block;
-        background: linear-gradient(90deg, var(--cyan), #7f8cff 30%, #d76bff 70%, var(--purple));
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-      }
-
-      .subtext {
-        max-width: 550px;
-        color: var(--muted);
-        font-size: 1.05rem;
-        line-height: 1.7;
-        margin-bottom: 28px;
-      }
-
-      .actions {
-        display: flex;
-        gap: 16px;
-        align-items: center;
-        margin-bottom: 24px;
-      }
-
-      .primary-btn,
-      .secondary-btn {
-        border-radius: 14px;
-        padding: 16px 26px;
-        font-weight: 700;
-        font-size: 1rem;
-        cursor: pointer;
-        transition: transform 0.2s ease;
-      }
-
-      .primary-btn {
-        background: linear-gradient(135deg, var(--cyan), var(--purple));
-        color: white;
-        border: none;
-        box-shadow: 0 0 30px rgba(0,229,255,0.35);
-      }
-
-      .secondary-btn {
-        background: rgba(255,255,255,0.04);
-        color: white;
-        border: 1px solid rgba(255,255,255,0.14);
-      }
-
-      .primary-btn:hover,
-      .secondary-btn:hover,
-      .nav-cta:hover {
-        transform: translateY(-1px);
-      }
-
-      .stats {
-        display: flex;
-        gap: 26px;
-        padding-top: 18px;
-        border-top: 1px solid rgba(255,255,255,0.1);
-        max-width: 440px;
-      }
-
-      .stat strong {
-        display: block;
-        font-size: 1.75rem;
-        color: var(--cyan);
-        letter-spacing: -0.05em;
-      }
-
-      .stat span {
-        display: block;
-        margin-top: 4px;
-        color: var(--muted);
-        font-size: 0.75rem;
-      }
-
-      .preview {
-        display: flex;
-        justify-content: center;
-      }
-
-      .preview-box {
-        width: min(100%, 540px);
-        border-radius: 22px;
-        overflow: hidden;
-        background: rgba(255,255,255,0.02);
-        border: 1px solid rgba(0,229,255,0.2);
-        box-shadow: 0 0 60px rgba(0,229,255,0.12), 0 0 100px rgba(178,108,255,0.08);
-      }
-
-      .preview-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 12px 18px;
-        font-size: 0.75rem;
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-        background: rgba(0,0,0,0.1);
-      }
-
-      .preview-live {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--cyan);
-        font-weight: 700;
-      }
-
-      .live-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--cyan);
-        box-shadow: 0 0 12px rgba(0,229,255,0.8);
-        animation: pulse 1.5s infinite;
-      }
-
-      @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.4; }
-      }
-
-      .preview-body {
-        position: relative;
-        min-height: 350px;
-        background: rgba(5,10,18,0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .preview-body::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background-image:
-          linear-gradient(rgba(0,229,255,0.04) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0,229,255,0.04) 1px, transparent 1px);
-        background-size: 28px 28px;
-      }
-
-      .hand-svg {
-        position: relative;
-        z-index: 1;
-        width: 220px;
-        height: 220px;
-        filter: drop-shadow(0 0 18px rgba(0,229,255,0.7));
-      }
-
-      .detect-tag {
-        position: absolute;
-        z-index: 1;
-        bottom: 18px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0,0,0,0.75);
-        border: 1px solid rgba(0,229,255,0.34);
-        border-radius: 12px;
-        padding: 10px 18px;
-        text-align: center;
-        min-width: 190px;
-      }
-
-      .detect-tag span {
-        display: block;
-        color: var(--cyan);
-        font-size: 0.7rem;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-      }
-
-      .detect-tag strong {
-        display: block;
-        margin-top: 4px;
-        font-size: 1.7rem;
-        letter-spacing: -0.06em;
-      }
-
-      .bottom-grid {
-        position: relative;
-        z-index: 1;
-        max-width: 1250px;
-        margin: 32px auto 0;
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 18px;
-      }
-
-      .feature {
-        text-align: left;
-        padding: 22px 18px 18px;
-        border-radius: 18px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.08);
-        min-height: 110px;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 12px;
-      }
-
-      .feature-icon {
-        width: 42px;
-        height: 42px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 12px;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.12);
-      }
-
-      .feature strong {
-        font-size: 1.05rem;
-      }
-
-      a.button-link {
-        text-decoration: none;
-      }
-
-      @media (max-width: 980px) {
-        .hero {
-          grid-template-columns: 1fr;
-        }
-
-        .nav-links {
-          display: none;
-        }
-
-        .bottom-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-      }
-
-      @media (max-width: 560px) {
-        .page { padding: 18px 18px 32px; }
-        .actions { flex-direction: column; align-items: stretch; }
-        .stats { flex-direction: column; gap: 14px; }
-        .bottom-grid { grid-template-columns: 1fr; }
+      
+      /* Subtle animated neon mesh background */
+      .bg-cyber-glow {
+        background: radial-gradient(circle at 10% 10%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+                    radial-gradient(circle at 90% 90%, rgba(157, 80, 187, 0.09) 0%, transparent 45%),
+                    #0B0E14;
       }
     </style>
+    <script type="module" crossorigin src="/assets/index-DszdAf1x.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-Df9Fshhw.css">
   </head>
-  <body>
-    <div class="page">
-      <nav class="nav">
-        <div class="brand">
-          <span class="brand-mark"></span>
-          <span>EchoSign</span>
-        </div>
-
-        <div class="nav-links">
-          <a href="#">Overview</a>
-          <a href="#">About</a>
-          <a href="#">Template</a>
-          <a href="#">Pricing</a>
-          <a href="#">Patterns</a>
-        </div>
-
-        <button class="nav-cta" onclick="location.href='modules.html'">Sign Up</button>
-      </nav>
-
-      <main class="hero">
-        <section>
-          <h1 class="headline">
-            Different Languages.
-            <span class="gradient">One Conversation.</span>
-          </h1>
-
-          <p class="subtext">
-            Their natively sign are help to help consummate conversation, Dammart Data in motion.
-          </p>
-
-          <div class="actions">
-            <button class="primary-btn" onclick="location.href='modules.html'">Get Started</button>
-            <button class="secondary-btn" onclick="location.href='Live Conversation & AI Assistant.html'">See How It Works</button>
-          </div>
-
-          <div class="stats">
-            <div class="stat">
-              <strong>100%</strong>
-              <span>Browser Local AI</span>
-            </div>
-            <div class="stat">
-              <strong>0ms</strong>
-              <span>Zero Latency</span>
-            </div>
-            <div class="stat">
-              <strong>Universal</strong>
-              <span>Accessibility</span>
-            </div>
-          </div>
-        </section>
-
-        <section class="preview">
-          <div class="preview-box">
-            <div class="preview-top">
-              <div class="preview-live"><span class="live-dot"></span> LIVE</div>
-              <div style="color:#97a7ba; font-size: 0.7rem;">MediaPipe Vision</div>
-            </div>
-
-            <div class="preview-body">
-              <svg class="hand-svg" viewBox="0 0 220 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <g stroke="#00e5ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M110 165V120M110 120L80 86L68 52M110 120L110 74M110 74L110 34M110 120L142 82L165 52M110 120L168 100L184 82M110 120L182 126"/>
-                  <path d="M110 120L88 96L84 74M110 120L128 92L138 64M110 120L157 109L175 89"/>
-                </g>
-                <g fill="#00e5ff">
-                  <circle cx="110" cy="165" r="4"/>
-                  <circle cx="110" cy="120" r="4"/>
-                  <circle cx="80" cy="86" r="4"/>
-                  <circle cx="68" cy="52" r="4"/>
-                  <circle cx="110" cy="74" r="4"/>
-                  <circle cx="110" cy="34" r="4"/>
-                  <circle cx="142" cy="82" r="4"/>
-                  <circle cx="165" cy="52" r="4"/>
-                  <circle cx="168" cy="100" r="4"/>
-                  <circle cx="184" cy="82" r="4"/>
-                  <circle cx="182" cy="126" r="4"/>
-                </g>
-              </svg>
-
-              <div class="detect-tag">
-                <span>Detected Sign</span>
-                <strong>HELLO</strong>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <div class="bottom-grid">
-        <div class="feature">
-          <div class="feature-icon">👁️</div>
-          <strong>Eye</strong>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">🎙️</div>
-          <strong>Mic</strong>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">✨</div>
-          <strong>Sparkles</strong>
-        </div>
-        <div class="feature">
-          <div class="feature-icon">🤝</div>
-          <strong>Hands</strong>
-        </div>
-      </div>
-    </div>
+  <body class="bg-cyber-glow min-h-screen">
+    <div id="root"></div>
   </body>
 </html>
