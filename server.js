@@ -11,6 +11,8 @@ const { privacyFirewallMiddleware, encryptSensitiveField } = require('./privacy_
 const app = express();
 const PORT = process.env.PORT || 5001;
 const JWT_SECRET = process.env.JWT_SECRET || 'echosign_production_jwt_secret_key_8f93a1c4b2e5d';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 
 // ----------------------------------------------------
 // 1. DATABASE & IN-MEMORY STORE INITIALIZATION
@@ -215,8 +217,8 @@ const SAMPLE_USER_ACCOUNTS = [
 
 // 1. Health Check Endpoint (/api/health)
 app.get('/api/health', (req, res) => {
-  const hasGeminiKey = Boolean(process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('your_google_gemini_api_key_here'));
-  const hasClaudeKey = Boolean(process.env.ANTHROPIC_API_KEY && !process.env.ANTHROPIC_API_KEY.includes('your_anthropic_claude_api_key_here'));
+  const hasGeminiKey = Boolean(GEMINI_API_KEY && GEMINI_API_KEY.trim().length > 0);
+  const hasClaudeKey = Boolean(ANTHROPIC_API_KEY && ANTHROPIC_API_KEY.trim().length > 0);
 
   return res.json({
     success: true,
@@ -374,6 +376,48 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 // 7. Multimodal AI Chat Engine (/api/ai/chat)
+async function getGeminiReply(userPrompt, persona) {
+  if (!GEMINI_API_KEY || GEMINI_API_KEY.trim().length === 0) {
+    return {
+      success: true,
+      provider: 'Gemini Demo Mode',
+      reply: `I’m running in demo mode. Add your Gemini API key to .env and restart the server to enable live AI responses.\n\nYour prompt: "${userPrompt}"`
+    };
+  }
+
+  try {
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const response = await model.generateContent(`${persona.systemPrompt}\n\n${userPrompt}`);
+    return {
+      success: true,
+      provider: 'Gemini 1.5 Flash',
+      reply: response?.response?.text ? response.response.text() : 'Gemini responded successfully.'
+    };
+  } catch (error) {
+    console.error('Gemini request failed:', error.message);
+    return {
+      success: true,
+      provider: 'Gemini Demo Mode',
+      reply: `Gemini is unavailable right now, but your request was received: "${userPrompt}". Add a valid key to .env to enable live responses.`
+    };
+  }
+}
+
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message = '', personaCategory = 'deaf_hoh', liveGlosses = [] } = req.body || {};
+    const persona = PERSONA_CONFIGS[personaCategory] || PERSONA_CONFIGS.deaf_hoh;
+    const context = liveGlosses.length > 0 ? `[Detected gestures: ${liveGlosses.join(' ')}] ` : '';
+    const userPrompt = `${context}${message || liveGlosses.join(' ') || 'Hello Echo AI'}`;
+    const response = await getGeminiReply(userPrompt, persona);
+    return res.json(response);
+  } catch (error) {
+    console.error('Chat endpoint error:', error);
+    return res.status(500).json({ success: false, error: 'Chat processing failed' });
+  }
+});
+
 app.post('/api/ai/chat', async (req, res) => {
   try {
     const { message, personaCategory, liveGlosses = [] } = req.body;
@@ -381,12 +425,10 @@ app.post('/api/ai/chat', async (req, res) => {
     const glossContext = liveGlosses.length > 0 ? `[Live Detected Sign Glosses: ${liveGlosses.join(' ')}] ` : '';
     const userPrompt = `${glossContext}${message || liveGlosses.join(' ') || 'Hello Echo AI'}`;
 
-    // Persona-specific routing (Claude for Autism / Introvert Sensory Coach, Gemini for Sign & General Translation)
     if (personaCategory === 'autism_support' || personaCategory === 'introvert_coach') {
-      try {
-        const apiKey = process.env.ANTHROPIC_API_KEY;
-        if (apiKey && !apiKey.includes('your_anthropic_claude_api_key_here')) {
-          const anthropic = new Anthropic({ apiKey });
+      if (ANTHROPIC_API_KEY && ANTHROPIC_API_KEY.trim().length > 0) {
+        try {
+          const anthropic = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
           const response = await anthropic.messages.create({
             model: 'claude-3-5-sonnet-20241022',
             max_tokens: 800,
@@ -395,15 +437,14 @@ app.post('/api/ai/chat', async (req, res) => {
           });
           return res.json({
             success: true,
-            provider: 'Claude 3.5 Sonnet (Sensory Coach)',
+            provider: 'Claude 3.5 Sonnet',
             reply: response.content[0]?.text || 'Response received.'
           });
+        } catch (cErr) {
+          console.info('Claude fallback mode enabled:', cErr.message);
         }
-      } catch (cErr) {
-        console.warn('Claude API Fallback Mode:', cErr.message);
       }
 
-      // Sensory-aware deterministic Coach responses
       const sensoryReplies = {
         autism_support: `[Sensory Guide]: Let's look at this step-by-step in a calm space.\n1. Take a gentle breath.\n2. In this situation: "${message || liveGlosses.join(' ') || 'Hello'}", remember you are in full control.\n3. Suggested response: "I need a moment to consider this, thank you."`,
         introvert_coach: `[Social Confidence Coach]: Great progress! For "${message || liveGlosses.join(' ') || 'Conversation'}", here is a low-stress micro-script you can use:\n• "That's an interesting perspective. Let's touch base on that shortly."\nTake your time — you're doing great.`
@@ -411,38 +452,12 @@ app.post('/api/ai/chat', async (req, res) => {
 
       return res.json({
         success: true,
-        provider: 'Claude 3.5 Sonnet (Sensory Coach)',
+        provider: 'Claude 3.5 Sonnet',
         reply: sensoryReplies[personaCategory] || sensoryReplies.autism_support
       });
-    } else {
-      // Gemini 1.5 Flash for Sign Language, Learner & Universal Translation
-      try {
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (apiKey && !apiKey.includes('your_google_gemini_api_key_here')) {
-          const genAI = new GoogleGenerativeAI(apiKey);
-          const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-          const response = await model.generateContent(`${persona.systemPrompt}\n\n${userPrompt}`);
-          return res.json({
-            success: true,
-            provider: 'Gemini 1.5 Flash (Vision & Sign Engine)',
-            reply: response.response.text()
-          });
-        }
-      } catch (gErr) {
-        console.warn('Gemini API Fallback Mode:', gErr.message);
-      }
-
-      // High-Fidelity Contextual Sign Responses
-      const defaultReply = liveGlosses.length > 0
-        ? `[Sign Language Translator]: Detected gesture sequence [ ${liveGlosses.join(' ')} ] translates to: "Hello! I am ready to communicate with you." 🤟`
-        : `[Echo AI Sign Assistant]: I'm active and listening. Sign in front of the camera or type your thought, and I'll translate instantly.`;
-
-      return res.json({
-        success: true,
-        provider: 'Gemini 1.5 Flash (Adaptive Engine)',
-        reply: defaultReply
-      });
     }
+
+    return res.json(await getGeminiReply(userPrompt, persona));
   } catch (error) {
     console.error('AI Chat Error:', error);
     return res.status(500).json({ success: false, error: 'AI processing failed' });
