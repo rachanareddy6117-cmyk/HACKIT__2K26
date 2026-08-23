@@ -44,7 +44,19 @@ export default function LiveWorkspaceView({
       setDetectedSign(`${gesture.meta.text} ${gesture.meta.emoji || '🤟'}`);
       setConfidence(Math.round((gesture.confidence || 0.94) * 100));
       setHandCount(1);
-      if (gesture.meta.text.toUpperCase() === targetSigns[targetIndex]) {
+      
+      const targetText = targetSigns[targetIndex];
+      const detectedText = gesture.meta.text.toUpperCase();
+      const detectedSign = (gesture.sign || '').toUpperCase();
+      
+      // Match if text contains the target (e.g. "HELLO / APPLAUSE" includes "HELLO")
+      // OR specific fallbacks for demo
+      const isMatch = detectedText.includes(targetText) ||
+                      (targetText === 'YES' && detectedSign === 'THUMBS_UP') ||
+                      (targetText === 'THANK YOU' && (detectedSign === 'OPEN_HAND' || detectedSign === 'ASL_B')) ||
+                      (targetText === 'HELP' && detectedSign === 'OPEN_HAND');
+                      
+      if (isMatch) {
         setMatchFeedback(true);
         window.setTimeout(() => {
           setTargetIndex(index => (index + 1) % targetSigns.length);
