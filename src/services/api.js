@@ -204,3 +204,29 @@ export async function broadcastEmergencyApi(alertData) {
   return post('/api/emergency/broadcast', alertData);
 }
 
+/** Peer-to-Peer Invite, Message & Calling API */
+export async function createPeerInviteApi({ inviterName, friendEmail, friendName }) {
+  const res = await post('/api/peers/invite', { inviterName, friendEmail, friendName });
+  if (res && res.success) return res;
+  const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return {
+    success: true,
+    roomCode,
+    inviteUrl: `${window.location.origin}/?room=${roomCode}`,
+    room: { roomId: roomCode, inviter: inviterName, friend: friendName || 'Friend', messages: [] }
+  };
+}
+
+export async function getPeerRoomApi(roomId) {
+  return get(`/api/peers/room/${roomId}`);
+}
+
+export async function sendPeerMessageApi(roomId, { sender = 'me', text, signTag }) {
+  return post(`/api/peers/room/${roomId}/message`, { sender, text, signTag });
+}
+
+export async function signalPeerCallApi(roomId, { action = 'start', callType = 'video', caller = 'User' }) {
+  return post(`/api/peers/room/${roomId}/call`, { action, callType, caller });
+}
+
+

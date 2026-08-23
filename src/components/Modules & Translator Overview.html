@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EchoSign - Modules</title>
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --card-bg: rgba(18, 22, 33, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-cyan: #00f2fe;
+      --accent-red: #ff3b30;
+      --accent-yellow: #ffcc00;
+      --accent-purple: #af52de;
+      --text-main: #ffffff;
+      --text-muted: #8a99ad;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-main); padding: 2rem; min-height: 100vh; }
+
+    header { display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; }
+    .logo-icon { width: 24px; height: 24px; background: var(--accent-cyan); border-radius: 50%; }
+    header h1 { font-size: 1.25rem; font-weight: 600; }
+
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; max-width: 1200px; margin: 0 auto; }
+    .col-subtitle { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .col-title { font-size: 1.25rem; font-weight: 700; margin-top: 2px; margin-bottom: 1rem; }
+
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.25rem; backdrop-filter: blur(10px); }
+
+    /* Module 1: Practice */
+    .lesson-tag { background: rgba(0,242,254,0.15); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; float: right; }
+    .practice-box { border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 12px; padding: 1rem; position: relative; margin-bottom: 1rem; background: rgba(0,0,0,0.2); }
+    .hand-thumb { position: absolute; bottom: 10px; right: 10px; width: 70px; height: 70px; border: 1px solid var(--text-muted); border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #000; }
+    .correct-btn { background: rgba(0, 230, 118, 0.2); border: 1px solid #00e676; color: #00e676; padding: 0.5rem 1rem; border-radius: 8px; display: inline-block; font-weight: 600; margin-top: 1rem; }
+
+    /* Module 2: Translator */
+    .toggle-bar { background: rgba(255,255,255,0.05); border-radius: 20px; padding: 4px; display: flex; justify-content: space-between; margin-bottom: 1rem; border: 1px solid var(--card-border); }
+    .toggle-btn { padding: 4px 16px; border-radius: 16px; font-size: 0.8rem; color: var(--text-muted); cursor: pointer; }
+    .toggle-btn.active { background: rgba(255,255,255,0.15); color: #fff; font-weight: 600; }
+    .text-input-area { width: 100%; height: 80px; background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); border-radius: 8px; color: #fff; padding: 0.5rem; margin-bottom: 1rem; resize: none; }
+    .output-box { background: rgba(0,242,254,0.05); border: 1px solid rgba(0,242,254,0.2); border-radius: 8px; padding: 1rem; text-align: center; margin-bottom: 1rem; }
+    .output-box h2 { color: var(--accent-cyan); font-size: 2rem; letter-spacing: 2px; }
+
+    /* Module 3: Emergency */
+    .emergency-header { display: flex; justify-content: space-between; align-items: center; }
+    .shield-icon { width: 32px; height: 32px; background: rgba(255,59,48,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent-red); }
+    .alert-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 1rem; margin-bottom: 1rem; }
+    .alert-btn { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 0.75rem; text-align: center; font-size: 0.75rem; font-weight: 700; cursor: pointer; border: 1px solid transparent; }
+    .alert-red { border-color: var(--accent-red); color: var(--accent-red); }
+    .alert-orange { border-color: #ff9500; color: #ff9500; }
+    .alert-cyan { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+    .alert-yellow { border-color: var(--accent-yellow); color: var(--accent-yellow); }
+    .alert-purple { border-color: var(--accent-purple); color: var(--accent-purple); }
+
+    .btn-full { width: 100%; padding: 0.75rem; border-radius: 8px; border: none; background: var(--accent-cyan); color: #000; font-weight: 700; cursor: pointer; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-icon"></div>
+    <h1>EchoSign</h1>
+  </header>
+
+  <div class="grid">
+    <!-- Left Third -->
+    <div>
+      <div class="col-subtitle">Left Third</div>
+      <div class="col-subtitle" style="color:#fff;">Practice Module</div>
+      <div class="col-title">Learn and Practice Signs</div>
+      <div class="card">
+        <div class="practice-box">
+          <span class="lesson-tag">Lesson 2/5</span>
+          <h3 style="margin-bottom: 0.5rem;">👍 Thumbs Up</h3>
+          <p style="font-size: 0.75rem; color: var(--text-muted); width: 65%;">YES/Affirmative usage in sign language context.</p>
+          <div class="correct-btn">Correct! 🎉</div>
+          <div class="hand-thumb">✋</div>
+        </div>
+        <button class="btn-full">Next Lesson</button>
+      </div>
+    </div>
+
+    <!-- Middle Third -->
+    <div>
+      <div class="col-subtitle">Middle Third</div>
+      <div class="col-subtitle" style="color:#fff;">Translator Module</div>
+      <div class="col-title">Everyday Translation</div>
+      <div class="card">
+        <div class="toggle-bar">
+          <div class="toggle-btn active">TEXT</div>
+          <div class="toggle-btn">SPEECH</div>
+          <div class="toggle-btn">SIGN</div>
+        </div>
+        <textarea class="text-input-area" placeholder="Hello"></textarea>
+        <div class="output-box">
+          <h2>HELLO 👋</h2>
+          <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 5px;">Audio Speech: Hello nice to meet you</p>
+        </div>
+        <button class="btn-full">🔊 Speak Output Audio</button>
+      </div>
+    </div>
+
+    <!-- Right Third -->
+    <div>
+      <div class="emergency-header">
+        <div>
+          <div class="col-subtitle">Right Third</div>
+          <div class="col-subtitle" style="color:#fff;">Emergency Module</div>
+        </div>
+        <div class="shield-icon">🛡️</div>
+      </div>
+      <div class="col-title">Accessible Emergency Alerts</div>
+      <div class="card">
+        <div class="alert-grid">
+          <div class="alert-btn alert-red">🚨 I NEED HELP</div>
+          <div class="alert-btn alert-orange">🏥 I NEED A DOCTOR</div>
+          <div class="alert-btn alert-cyan">💧 I NEED WATER</div>
+          <div class="alert-btn alert-yellow">📢 CALL SECURITY</div>
+          <div class="alert-btn alert-purple">📍 I AM LOST</div>
+          <div class="alert-btn alert-red">❤️ I AM IN PAIN</div>
+        </div>
+        <button class="btn-full" style="background: transparent; border: 1px solid var(--accent-cyan); color: var(--accent-cyan);">Broadcast Alert</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

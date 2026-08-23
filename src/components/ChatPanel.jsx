@@ -1,6 +1,43 @@
 import React, { useState } from 'react';
 import { Send, Trash2, Sparkles, Volume2, Bot, ShieldCheck } from 'lucide-react';
+import SignIllustration from './SignIllustration';
 import { sendChatMessage } from '../services/api';
+
+const SIGN_KEYWORDS = {
+  'A': { sign: 'ASL_A', emoji: '✊', title: 'Letter A' },
+  'B': { sign: 'ASL_B', emoji: '✋', title: 'Letter B' },
+  'C': { sign: 'ASL_C', emoji: '🫲', title: 'Letter C' },
+  'D': { sign: 'ASL_D', emoji: '☝️', title: 'Letter D' },
+  'F': { sign: 'ASL_F', emoji: '👌', title: 'Letter F' },
+  'I': { sign: 'ASL_I', emoji: '🤙', title: 'Letter I' },
+  'L': { sign: 'ASL_L', emoji: '👆', title: 'Letter L' },
+  'V': { sign: 'ASL_V', emoji: '✌️', title: 'Letter V / Peace' },
+  'W': { sign: 'ASL_W', emoji: '🖖', title: 'Letter W' },
+  'Y': { sign: 'ASL_Y', emoji: '🤙', title: 'Letter Y' },
+  'HELLO': { sign: 'OPEN_HAND', emoji: '👋', title: 'Hello / Wave' },
+  'YES': { sign: 'THUMBS_UP', emoji: '👍', title: 'Yes / Thumbs Up' },
+  'NO': { sign: 'THUMBS_DOWN', emoji: '👎', title: 'No / Disagree' },
+  'STOP': { sign: 'FIST', emoji: '✊', title: 'Stop / Wait' },
+  'PEACE': { sign: 'PEACE', emoji: '✌️', title: 'Peace / Two' },
+  'LOVE': { sign: 'ILY', emoji: '🤟', title: 'I Love You' },
+  'ILY': { sign: 'ILY', emoji: '🤟', title: 'I Love You' },
+  'WATER': { sign: 'ASL_W', emoji: '💧', title: 'Water / Drink' },
+  'OK': { sign: 'OK', emoji: '👌', title: 'OK / Fine' },
+};
+
+function detectSignsInText(text) {
+  if (!text) return [];
+  const words = text.toUpperCase().replace(/[^A-Z0-9\s]/g, ' ').split(/\s+/);
+  const matched = [];
+  const seen = new Set();
+  words.forEach(w => {
+    if (SIGN_KEYWORDS[w] && !seen.has(w)) {
+      seen.add(w);
+      matched.push(SIGN_KEYWORDS[w]);
+    }
+  });
+  return matched;
+}
 
 function getWelcomeMsg(personaId) {
   switch (personaId) {
@@ -150,6 +187,44 @@ export default function ChatPanel({ persona, liveGlosses = [] }) {
                 </div>
               )}
               <div className="whitespace-pre-wrap">{m.text}</div>
+
+              {/* Visual Hand Sign Preview if letter or word matches */}
+              {(() => {
+                const detected = detectSignsInText(m.text);
+                if (detected.length === 0) return null;
+                return (
+                  <div style={{
+                    marginTop: 8,
+                    padding: '8px 10px',
+                    background: 'rgba(0,0,0,0.35)',
+                    border: '1px solid rgba(0,229,255,0.25)',
+                    borderRadius: 10,
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: 8,
+                    alignItems: 'center'
+                  }}>
+                    <span style={{ fontSize: 9, fontWeight: 800, color: '#00f2fe', width: '100%' }}>
+                      🤟 MATCHED SIGN GESTURE:
+                    </span>
+                    {detected.map((d, idx) => (
+                      <div key={idx} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        background: 'rgba(255,255,255,0.06)',
+                        padding: '4px 8px',
+                        borderRadius: 8,
+                        border: '1px solid rgba(255,255,255,0.1)'
+                      }}>
+                        <SignIllustration sign={d.sign} emoji={d.emoji} size={28} />
+                        <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>{d.title}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+
               <div className="flex items-center justify-between gap-3 mt-1.5 pt-1.5 opacity-60 border-t border-white/10 text-[9px]">
                 <span>{m.time}</span>
                 {m.sender === 'ai' && (

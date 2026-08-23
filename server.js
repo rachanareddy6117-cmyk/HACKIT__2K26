@@ -1,4 +1,5 @@
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -14,6 +15,9 @@ let SERVER_PORT = BASE_PORT;
 const JWT_SECRET = process.env.JWT_SECRET || 'echosign_production_jwt_secret_key_8f93a1c4b2e5d';
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
+
+// Serve static HTML components
+app.use('/static-html', express.static(path.join(__dirname, 'src', 'components')));
 
 function listenWithFallback(appInstance, port) {
   return new Promise((resolve) => {
@@ -666,25 +670,149 @@ app.post('/api/translator/translate', (req, res) => {
   });
 });
 
-// Suite Endpoint 3: Accessible Emergency Broadcast (/api/emergency/broadcast)
-app.post('/api/emergency/broadcast', (req, res) => {
-  const { alertId, label, speech, location } = req.body || {};
-  const logEntry = {
-    id: `alert_${Date.now()}`,
-    alertId: alertId || 'help',
-    label: label || '🆘 I NEED HELP',
-    speech: speech || 'I need immediate help!',
-    location: location || 'Client Geolocation: Active (Browser Coords)',
-    dispatchedAt: new Date().toISOString(),
-    status: 'BROADCAST_SENT'
+// ── PEER-TO-PEER CONVERSATION & FRIEND CALL BACKEND ENDPOINTS ──
+
+// Store active peer rooms and invitations in memory
+if (!inMemoryStore.peerRooms) {
+  inMemoryStore.peerRooms = new Map();
+}
+
+// 1. Generate / Send Friend Invitation (/api/peers/invite)
+app.post('/api/peers/invite', (req, res) => {
+  const { inviterName = 'Rachana Reddy', friendEmail = '', friendName = '' } = req.body || {};
+  const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+  const inviteId = `inv_${Date.now()}`;
+
+  const roomData = {
+    roomId: roomCode,
+    inviter: inviterName,
+    friend: friendName || friendEmail || 'Friend',
+    createdAt: new Date().toISOString(),
+    status: 'ACTIVE',
+    messages: [
+      {
+        id: `msg_init`,
+        sender: 'system',
+        text: `Welcome to EchoSign P2P Accessible Room [${roomCode}]. Live captions and sign language detection active.`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+    ],
+    callState: {
+      active: false,
+      type: null,
+      caller: null
+    }
   };
 
-  inMemoryStore.auditLogs.unshift(logEntry);
+  inMemoryStore.peerRooms.set(roomCode, roomData);
 
   return res.json({
     success: true,
-    message: 'Emergency alert dispatched to responders & local relays',
-    alert: logEntry
+    message: `Invitation generated successfully for ${friendName || 'friend'}`,
+    inviteId,
+    roomCode,
+    inviteUrl: `${process.env.CLIENT_ORIGIN || 'http://localhost:5173'}/?room=${roomCode}`,
+    room: roomData
+  });
+});
+
+// 2. List / Join Peer Room (/api/peers/room/:roomId)
+app.get('/api/peers/room/:roomId', (req, res) => {
+  const { roomId } = req.params;
+  const room = inMemoryStore.peerRooms.get(roomId.toUpperCase());
+
+  if (!room) {
+    // Create dynamically if not found
+    const newRoom = {
+      roomId: roomId.toUpperCase(),
+      inviter: 'Host',
+      friend: 'Friend',
+      createdAt: new Date().toISOString(),
+      status: 'ACTIVE',
+      messages: [
+        {
+          id: `msg_welcome`,
+          sender: 'system',
+          text: `Connected to room ${roomId.toUpperCase()}. Ready for real-time chat, voice, and video calls!`,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ],
+      callState: { active: false, type: null, caller: null }
+    };
+    inMemoryStore.peerRooms.set(roomId.toUpperCase(), newRoom);
+    return res.json({ success: true, room: newRoom });
+  }
+
+  return res.json({ success: true, room });
+});
+
+// 3. Send Peer Message in Room (/api/peers/room/:roomId/message)
+app.post('/api/peers/room/:roomId/message', (req, res) => {
+  const { roomId } = req.params;
+  const { sender = 'me', text = '', signTag } = req.body || {};
+
+  const cleanRoomId = roomId.toUpperCase();
+  let room = inMemoryStore.peerRooms.get(cleanRoomId);
+
+  if (!room) {
+    room = {
+      roomId: cleanRoomId,
+      createdAt: new Date().toISOString(),
+      messages: [],
+      callState: { active: false, type: null, caller: null }
+    };
+    inMemoryStore.peerRooms.set(cleanRoomId, room);
+  }
+
+  const newMsg = {
+    id: `msg_${Date.now()}`,
+    sender,
+    text: text.trim(),
+    signTag: signTag || (text.toUpperCase().includes('HELLO') ? 'HELLO 👋' : text.toUpperCase().includes('YES') ? 'YES 👍' : null),
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  };
+
+  room.messages.push(newMsg);
+
+  return res.json({
+    success: true,
+    message: newMsg,
+    totalMessages: room.messages.length
+  });
+});
+
+// 4. Peer Call Signaling (/api/peers/room/:roomId/call)
+app.post('/api/peers/room/:roomId/call', (req, res) => {
+  const { roomId } = req.params;
+  const { action = 'start', callType = 'video', caller = 'User' } = req.body || {};
+  const cleanRoomId = roomId.toUpperCase();
+  let room = inMemoryStore.peerRooms.get(cleanRoomId);
+
+  if (!room) {
+    room = { roomId: cleanRoomId, messages: [], callState: { active: false, type: null, caller: null } };
+    inMemoryStore.peerRooms.set(cleanRoomId, room);
+  }
+
+  if (action === 'start') {
+    room.callState = {
+      active: true,
+      type: callType,
+      caller,
+      startedAt: new Date().toISOString()
+    };
+  } else if (action === 'end') {
+    room.callState = {
+      active: false,
+      type: null,
+      caller: null
+    };
+  }
+
+  return res.json({
+    success: true,
+    action,
+    callState: room.callState,
+    roomId: cleanRoomId
   });
 });
 
@@ -782,6 +910,17 @@ app.post(['/api/predict/landmarks', '/predict/landmarks'], (req, res) => {
       { gloss: ISL_VOCABULARY[(hashIdx + 1) % ISL_VOCABULARY.length].gloss, confidence: 0.72 }
     ]
   });
+});
+
+// 11. HTML Components Direct Serving (/api/html/modules-overview & /api/html/live-workspace)
+app.get(['/api/html/modules-overview', '/html/modules-overview'], (req, res) => {
+  const filePath = path.join(__dirname, 'src', 'components', 'Modules & Translator Overview.html');
+  res.sendFile(filePath);
+});
+
+app.get(['/api/html/live-workspace', '/html/live-workspace'], (req, res) => {
+  const filePath = path.join(__dirname, 'src', 'components', 'Live Workspace.html');
+  res.sendFile(filePath);
 });
 
 // ----------------------------------------------------

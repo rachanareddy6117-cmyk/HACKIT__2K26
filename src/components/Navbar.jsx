@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Navbar({ onGetStarted, onLogin }) {
+export default function Navbar({ onGetStarted, onLogin, onOpenModules, onOpenWorkspace }) {
   return (
     <nav className="landing-navbar" style={{
       position: 'sticky', top: 0, zIndex: 50,
@@ -36,8 +36,32 @@ export default function Navbar({ onGetStarted, onLogin }) {
       </div>
 
       {/* Nav links */}
-      <div className="landing-navbar-links" style={{ display:'flex', gap:32, alignItems:'center' }}>
-        {['Overview','About','Template','Pricing','Patterns'].map(l => (
+      <div className="landing-navbar-links" style={{ display:'flex', gap:24, alignItems:'center' }}>
+        <button
+          onClick={onOpenModules}
+          style={{
+            background:'transparent', border:'none', color:'#00e5ff', fontSize:13, fontWeight:700,
+            cursor:'pointer', padding:'6px 10px', borderRadius:8, transition:'all .2s'
+          }}
+          onMouseEnter={e=>e.currentTarget.style.background='rgba(0,229,255,0.1)'}
+          onMouseLeave={e=>e.currentTarget.style.background='transparent'}
+        >
+          📐 Modules Suite
+        </button>
+
+        <button
+          onClick={onOpenWorkspace}
+          style={{
+            background:'transparent', border:'none', color:'#9d4edd', fontSize:13, fontWeight:700,
+            cursor:'pointer', padding:'6px 10px', borderRadius:8, transition:'all .2s'
+          }}
+          onMouseEnter={e=>e.currentTarget.style.background='rgba(157,78,221,0.1)'}
+          onMouseLeave={e=>e.currentTarget.style.background='transparent'}
+        >
+          ⚡ Live Workspace
+        </button>
+
+        {['Overview','About','Pricing'].map(l => (
           <a key={l} href="#" style={{
             color:'#94a3b8', fontSize:13, fontWeight:500,
             textDecoration:'none', transition:'color .2s',

@@ -8,19 +8,26 @@ import Emergency from './Emergency';
 import PracticeModule from './PracticeModule';
 import TranslatorModule from './TranslatorModule';
 import EmergencyModule from './EmergencyModule';
+import ModulesView from './ModulesView';
+import LiveWorkspaceView from './LiveWorkspaceView';
+import AutismSupportModule from './AutismSupportModule';
+import PeerConnectModule from './PeerConnectModule';
 import Logo from './Logo';
 import {
-  MessageSquare, Award, Globe, ShieldAlert, LogOut, User, Menu, X, Activity, LayoutGrid, Sparkles
+  MessageSquare, Award, Globe, ShieldAlert, LogOut, User, Menu, X, Activity, LayoutGrid, Sparkles, MonitorPlay, Heart, Users
 } from 'lucide-react';
 import { clearSession } from '../utils/storage';
 import { checkBackendHealth } from '../services/api';
 
 const NAV_ITEMS = [
-  { id: 'suite',        label: '3-Column Suite', icon: LayoutGrid },
+  { id: 'suite',        label: '3-Column Suite',   icon: LayoutGrid },
+  { id: 'workspace',    label: 'Live Workspace',   icon: MonitorPlay },
   { id: 'practice',     label: 'Practice (20 Lvl)', icon: Award },
-  { id: 'conversation', label: 'Conversation',   icon: MessageSquare },
-  { id: 'translate',    label: 'Translate',       icon: Globe },
-  { id: 'emergency',    label: 'Emergency',       icon: ShieldAlert, red: true },
+  { id: 'autism',       label: 'Autism & AAC',     icon: Heart },
+  { id: 'peer_connect', label: 'Peer Connect & Call', icon: Users },
+  { id: 'conversation', label: 'Conversation',     icon: MessageSquare },
+  { id: 'translate',    label: 'Translate',        icon: Globe },
+  { id: 'emergency',    label: 'Emergency',        icon: ShieldAlert, red: true },
 ];
 
 export default function Dashboard({ user, persona, onLogout, onChangePersona }) {
@@ -277,12 +284,36 @@ export default function Dashboard({ user, persona, onLogout, onChangePersona }) 
             </div>
           )}
 
+          {/* ── VIEW: DEDICATED LIVE WORKSPACE (EXACT HTML SPECIFICATION) ── */}
+          {activeTab === 'workspace' && (
+            <div className="h-full rounded-2xl overflow-hidden" style={{ minHeight: 'calc(100vh - 120px)' }}>
+              <LiveWorkspaceView
+                user={user}
+                persona={persona}
+                onNavigateModules={() => setActiveTab('suite')}
+                onNavigateTab={(tab) => setActiveTab(tab)}
+                onLogout={handleLogout}
+                onChangePersona={onChangePersona}
+              />
+            </div>
+          )}
+
           {/* ── VIEW: 20-LEVEL PRACTICE STUDIO (MATCHING PDF GUIDES & DOTTED SKELETON) ── */}
           {activeTab === 'practice' && (
             <Practice
               initialCategory={persona?.id || 'deaf_mute'}
               user={user}
             />
+          )}
+
+          {/* ── VIEW: AUTISM & SENSORY EXPRESSION BOARD ── */}
+          {activeTab === 'autism' && (
+            <AutismSupportModule />
+          )}
+
+          {/* ── VIEW: PEER CONNECT, CHAT & VIDEO CALL ── */}
+          {activeTab === 'peer_connect' && (
+            <PeerConnectModule currentUser={user} />
           )}
 
           {/* ── VIEW: LIVE CONVERSATION & CHATBOT ── */}
