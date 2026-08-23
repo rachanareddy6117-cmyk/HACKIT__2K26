@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Volume2, ShieldCheck, Heart, RefreshCw, Eye, Smile, AlertCircle, Compass, Zap, Music, Coffee, Moon } from 'lucide-react';
-import CameraView from './CameraView';
+import {
+  Sparkles, Volume2, ShieldCheck, Heart, RefreshCw, Eye, Smile,
+  AlertCircle, Compass, Zap, Music, Coffee, Moon, Headphones,
+  Sun, UserCheck, MessageSquare, Hand, Check
+} from 'lucide-react';
 
 const EMOTION_STATES = [
   { id: 'calm', label: 'Calm & Grounded', emoji: '😌', color: '#10b981', desc: 'Heart rate steady, low sensory stress', suggestion: 'Great state for learning or casual conversation.' },
@@ -11,30 +14,58 @@ const EMOTION_STATES = [
   { id: 'tired', label: 'Fatigue / Rest Needed', emoji: '😴', color: '#64748b', desc: 'Lower eye engagement, slowed posture', suggestion: 'Switch to low-energy listening mode.' },
 ];
 
+const AAC_CATEGORIES = [
+  { id: 'all', label: '🧩 All AAC Symbols' },
+  { id: 'needs', label: '🟢 Basic Needs' },
+  { id: 'feelings', label: '🟣 Emotional Feelings' },
+  { id: 'comfort', label: '🔵 Sensory & Comfort' },
+  { id: 'social', label: '🟡 Social Communication' },
+];
+
 const AAC_CARDS = [
-  { id: 'space', label: 'I Need Space', emoji: '🛑', speech: 'I need a few minutes of quiet personal space, please.', color: '#ef4444' },
-  { id: 'water', label: 'Drink Water', emoji: '💧', speech: 'I would like a glass of drinking water.', color: '#00f2fe' },
-  { id: 'break', label: 'Take a Break', emoji: '⏸️', speech: 'Let us take a short break right now.', color: '#f59e0b' },
-  { id: 'calm', label: 'Calm Breathing', emoji: '🧘', speech: 'Practicing calm meditation breathing to center my thoughts.', color: '#10b981' },
-  { id: 'hungry', label: 'Need Food', emoji: '🍽️', speech: 'I am hungry and need something to eat.', color: '#ec4899' },
-  { id: 'happy', label: 'Feeling Good', emoji: '😊', speech: 'I am feeling good and ready to proceed.', color: '#38bdf8' },
-  { id: 'music', label: 'Play Music', emoji: '🎵', speech: 'Can we listen to soothing background music?', color: '#9d50bb' },
-  { id: 'yes', label: 'Yes / Agree', emoji: '👍', speech: 'Yes, I agree with this.', color: '#22c55e' },
-  { id: 'no', label: 'No / Disagree', emoji: '👎', speech: 'No, I do not want this.', color: '#ef4444' },
-  { id: 'repeat', label: 'Please Repeat', emoji: '🔄', speech: 'Could you please repeat that more slowly?', color: '#a78bfa' },
-  { id: 'help', label: 'Need Support', emoji: '🤝', speech: 'I need a little help with this task.', color: '#f97316' },
-  { id: 'sleep', label: 'Rest / Sleep', emoji: '😴', speech: 'I am feeling tired and need to rest.', color: '#64748b' },
+  // Basic Needs
+  { id: 'water', category: 'needs', label: 'Drink Water', emoji: '💧', speech: 'I would like a glass of drinking water.', color: '#00f2fe', sign: 'WATER' },
+  { id: 'hungry', category: 'needs', label: 'Need Food', emoji: '🍎', speech: 'I am hungry and need something to eat.', color: '#f97316', sign: 'FOOD' },
+  { id: 'restroom', category: 'needs', label: 'Use Restroom', emoji: '🚻', speech: 'I need to use the restroom, please.', color: '#8b5cf6', sign: 'RESTROOM' },
+  { id: 'sleep', category: 'needs', label: 'Rest / Sleep', emoji: '🛏️', speech: 'I am feeling tired and need to rest.', color: '#64748b', sign: 'SLEEP' },
+  { id: 'medicine', category: 'needs', label: 'Take Medicine', emoji: '💊', speech: 'I need to take my medication.', color: '#ef4444', sign: 'MEDICINE' },
+  { id: 'clothes', category: 'needs', label: 'Too Hot / Cold', emoji: '🧥', speech: 'The temperature is uncomfortable for me.', color: '#06b6d4', sign: 'COMFORT' },
+
+  // Emotional Feelings
+  { id: 'calm_feel', category: 'feelings', label: 'Feeling Calm', emoji: '😌', speech: 'I am feeling calm and peaceful.', color: '#10b981', sign: 'CALM' },
+  { id: 'happy_feel', category: 'feelings', label: 'Feeling Happy', emoji: '😊', speech: 'I am happy and having a good time.', color: '#00f2fe', sign: 'HAPPY' },
+  { id: 'overloaded', category: 'feelings', label: 'Sensory Overload', emoji: '😵', speech: 'I am experiencing sensory overload from too much sound or light.', color: '#ef4444', sign: 'OVERLOAD' },
+  { id: 'anxious_feel', category: 'feelings', label: 'Feeling Anxious', emoji: '😰', speech: 'I am feeling nervous and anxious right now.', color: '#f59e0b', sign: 'ANXIOUS' },
+  { id: 'frustrated', category: 'feelings', label: 'Frustrated', emoji: '😤', speech: 'I am feeling frustrated with this situation.', color: '#ec4899', sign: 'FRUSTRATED' },
+  { id: 'tired_feel', category: 'feelings', label: 'Very Tired', emoji: '😴', speech: 'My energy is low, I need some rest.', color: '#64748b', sign: 'TIRED' },
+
+  // Sensory & Comfort Actions
+  { id: 'headphones', category: 'comfort', label: 'Noise Headphones', emoji: '🎧', speech: 'Please pass my noise-cancelling headphones.', color: '#a78bfa', sign: 'HEADPHONES' },
+  { id: 'dim_lights', category: 'comfort', label: 'Dim the Lights', emoji: '💡', speech: 'The lighting is too bright. Please dim the lights.', color: '#eab308', sign: 'DIM_LIGHTS' },
+  { id: 'fidget', category: 'comfort', label: 'Fidget Toy', emoji: '🧸', speech: 'I need my sensory fidget toy to help me focus.', color: '#38bdf8', sign: 'FIDGET' },
+  { id: 'walk', category: 'comfort', label: 'Walk Outside', emoji: '🚶', speech: 'Can we go for a walk outside in fresh air?', color: '#10b981', sign: 'WALK' },
+  { id: 'quiet_time', category: 'comfort', label: 'Quiet Time / Break', emoji: '🤫', speech: 'I need 5 minutes of quiet time to regulate.', color: '#6366f1', sign: 'QUIET' },
+  { id: 'hug', category: 'comfort', label: 'Deep Pressure Hug', emoji: '🫂', speech: 'I would like a deep pressure hug or weighted blanket.', color: '#ec4899', sign: 'HUG' },
+
+  // Social Communication
+  { id: 'hello_soc', category: 'social', label: 'Hello / Greeting', emoji: '👋', speech: 'Hello! Nice to see you today.', color: '#00f2fe', sign: 'HELLO' },
+  { id: 'bye_soc', category: 'social', label: 'Goodbye', emoji: '🙋', speech: 'Goodbye, see you again soon!', color: '#9d50bb', sign: 'GOODBYE' },
+  { id: 'please_soc', category: 'social', label: 'Please / Thank You', emoji: '🙏', speech: 'Please and thank you very much.', color: '#10b981', sign: 'THANK_YOU' },
+  { id: 'space_soc', category: 'social', label: 'I Need Space', emoji: '🛑', speech: 'I need a few minutes of quiet personal space, please.', color: '#ef4444', sign: 'SPACE' },
+  { id: 'play_together', category: 'social', label: 'Join Activity', emoji: '🤝', speech: 'Can we do this activity or game together?', color: '#38bdf8', sign: 'TOGETHER' },
+  { id: 'repeat_soc', category: 'social', label: 'Please Repeat', emoji: '🔄', speech: 'Could you please explain that again more slowly?', color: '#f59e0b', sign: 'REPEAT' }
 ];
 
 export default function AutismSupportModule() {
   const [currentEmotionIdx, setCurrentEmotionIdx] = useState(0);
   const [isScanning, setIsScanning] = useState(true);
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [activeSpeech, setActiveSpeech] = useState('');
-  const [soundActive, setSoundActive] = useState(false);
+  const [selectedCardId, setSelectedCardId] = useState(null);
 
   const currentEmotion = EMOTION_STATES[currentEmotionIdx];
 
-  // Periodic simulated emotion scanner reading facial cues
+  // Periodic simulated facial/sensory scanning
   useEffect(() => {
     const timer = setInterval(() => {
       if (isScanning) {
@@ -44,19 +75,20 @@ export default function AutismSupportModule() {
     return () => clearInterval(timer);
   }, [isScanning]);
 
-  const speakText = (text) => {
-    setActiveSpeech(text);
+  const speakText = (card) => {
+    setSelectedCardId(card.id);
+    setActiveSpeech(card.speech);
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text);
-      u.rate = 0.95;
+      const u = new SpeechSynthesisUtterance(card.speech);
+      u.rate = 0.92;
       window.speechSynthesis.speak(u);
     }
   };
 
-  const handleCardClick = (card) => {
-    speakText(card.speech);
-  };
+  const filteredCards = selectedCategory === 'all'
+    ? AAC_CARDS
+    : AAC_CARDS.filter(c => c.category === selectedCategory);
 
   return (
     <div style={{
@@ -64,16 +96,16 @@ export default function AutismSupportModule() {
       flexDirection: 'column',
       gap: 20,
       color: '#fff',
-      fontFamily: 'inherit'
+      fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif"
     }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
         <div>
           <div style={{ fontSize: 11, fontWeight: 800, color: '#A78BFA', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            AUTISM & INTROVERT SENSORY ASSISTANT
+            AUTISM & SENSORY AAC ASSISTANT
           </div>
           <h1 style={{ fontSize: 24, fontWeight: 900, color: '#fff', margin: '4px 0 0 0' }}>
-            Expression Recognition & Visual Action Board
+            Visual AAC Grid & Facial Expression Radar
           </h1>
         </div>
 
@@ -98,7 +130,7 @@ export default function AutismSupportModule() {
         </button>
       </div>
 
-      {/* Top Split: Live Expression Radar + Suggestions */}
+      {/* Top Split: Live Expression Radar + Comfort Action */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
@@ -139,21 +171,21 @@ export default function AutismSupportModule() {
                 fontSize: 48,
                 width: 72,
                 height: 72,
-                borderRadius: 20,
-                background: 'rgba(0,0,0,0.4)',
-                border: `1px solid ${currentEmotion.color}40`,
+                borderRadius: 18,
+                background: `${currentEmotion.color}20`,
+                border: `1px solid ${currentEmotion.color}50`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: `0 0 20px ${currentEmotion.color}30`
+                boxShadow: `0 0 24px ${currentEmotion.color}30`
               }}>
                 {currentEmotion.emoji}
               </div>
               <div>
-                <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', margin: 0 }}>
+                <h3 style={{ fontSize: 20, fontWeight: 900, color: '#fff', margin: 0 }}>
                   {currentEmotion.label}
-                </h2>
-                <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 4 }}>
+                </h3>
+                <p style={{ fontSize: 12, color: '#94a3b8', margin: '4px 0 0 0' }}>
                   {currentEmotion.desc}
                 </p>
               </div>
@@ -161,23 +193,18 @@ export default function AutismSupportModule() {
           </div>
 
           <div style={{
-            background: 'rgba(0,0,0,0.35)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 14,
-            padding: '12px 14px',
-            marginTop: 14
+            background: 'rgba(0,0,0,0.3)',
+            borderRadius: 12,
+            padding: '10px 14px',
+            border: '1px solid rgba(255,255,255,0.06)',
+            fontSize: 12,
+            color: currentEmotion.color
           }}>
-            <div style={{ fontSize: 11, fontWeight: 800, color: '#fbbf24', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Sparkles size={13} />
-              <span>Sensory Comfort Recommendation:</span>
-            </div>
-            <div style={{ fontSize: 12, color: '#e2e8f0', lineHeight: 1.4 }}>
-              {currentEmotion.suggestion}
-            </div>
+            💡 Recommendation: {currentEmotion.suggestion}
           </div>
         </div>
 
-        {/* Right: Quick Action Speech Box */}
+        {/* Right: Active Vocalizer Banner */}
         <div style={{
           background: 'rgba(18, 22, 33, 0.75)',
           border: '1px solid rgba(255,255,255,0.08)',
@@ -189,119 +216,137 @@ export default function AutismSupportModule() {
           justifyContent: 'space-between'
         }}>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 800, color: '#00f2fe', textTransform: 'uppercase', marginBottom: 8 }}>
-              ACTIVE VOCALIZATION OUTPUT
+            <div style={{ fontSize: 11, fontWeight: 800, color: '#00f2fe', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              TAP-TO-VOCALIZE SPEECH ENGINE
             </div>
-            <div style={{
-              background: 'rgba(0,0,0,0.4)',
-              border: '1px solid rgba(0,242,254,0.25)',
-              borderRadius: 14,
-              padding: 16,
-              minHeight: 80,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              textAlign: 'center',
-              fontSize: 15,
-              fontWeight: 700,
-              color: '#00f2fe'
-            }}>
-              {activeSpeech ? `"${activeSpeech}"` : 'Tap any action symbol card below to speak out loud'}
-            </div>
+            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', margin: '6px 0 10px 0' }}>
+              Instant AAC Audio Output
+            </h3>
+            <p style={{ fontSize: 12, color: '#8a99ad', margin: 0 }}>
+              Tap any symbol card below to speak clearly and display accessibility sign gestures.
+            </p>
           </div>
 
-          <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-            <button
-              onClick={() => speakText("I am calm and ready.")}
-              style={{
-                flex: 1,
-                padding: '10px 14px',
-                borderRadius: 12,
-                border: 'none',
-                background: 'linear-gradient(135deg,#00f2fe,#9d50bb)',
-                color: '#fff',
-                fontSize: 12,
-                fontWeight: 800,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 6
-              }}
-            >
-              <Volume2 size={16} /> Speak Affirmation
-            </button>
-            <button
-              onClick={() => {
-                speakText("I need three minutes of calm breathing.");
-              }}
-              style={{
-                padding: '10px 14px',
-                borderRadius: 12,
-                border: '1px solid #ef4444',
-                background: 'rgba(239,68,68,0.15)',
-                color: '#ef4444',
-                fontSize: 12,
-                fontWeight: 800,
-                cursor: 'pointer'
-              }}
-            >
-              🛑 Prompt Space
-            </button>
+          <div style={{
+            background: activeSpeech ? 'rgba(0, 242, 254, 0.12)' : 'rgba(0,0,0,0.2)',
+            border: activeSpeech ? '1px solid #00f2fe' : '1px solid rgba(255,255,255,0.06)',
+            borderRadius: 14,
+            padding: '12px 16px',
+            color: activeSpeech ? '#00f2fe' : '#64748b',
+            fontSize: 13,
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10
+          }}>
+            <Volume2 size={20} />
+            <span>{activeSpeech ? `"${activeSpeech}"` : 'Select any symbol to trigger audio speech...'}</span>
           </div>
         </div>
       </div>
 
-      {/* Bottom: Visual AAC Communication Symbol Grid */}
-      <div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 800, color: '#fff', margin: 0 }}>
-            Visual Expression & Needs Cards (AAC Tap-to-Speak)
-          </h3>
-          <span style={{ fontSize: 11, color: '#94a3b8' }}>12 Everyday Action Symbols</span>
-        </div>
+      {/* Category Tabs */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {AAC_CATEGORIES.map(cat => (
+          <button
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.id)}
+            style={{
+              background: selectedCategory === cat.id ? 'rgba(157, 80, 187, 0.25)' : 'rgba(255, 255, 255, 0.05)',
+              border: `1px solid ${selectedCategory === cat.id ? '#a78bfa' : 'rgba(255, 255, 255, 0.1)'}`,
+              color: selectedCategory === cat.id ? '#a78bfa' : '#8a99ad',
+              borderRadius: 20,
+              padding: '6px 16px',
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))',
-          gap: 12
-        }}>
-          {AAC_CARDS.map((card) => (
+      {/* ── AAC SYMBOL GRID ── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+        gap: 14
+      }}>
+        {filteredCards.map(card => {
+          const isSelected = selectedCardId === card.id;
+          return (
             <div
               key={card.id}
-              onClick={() => handleCardClick(card)}
+              onClick={() => speakText(card)}
               style={{
-                background: 'rgba(18, 22, 33, 0.75)',
-                border: `1px solid ${card.color}35`,
+                background: isSelected ? 'rgba(157, 80, 187, 0.25)' : 'rgba(18, 22, 33, 0.75)',
+                border: `1px solid ${isSelected ? card.color : 'rgba(255, 255, 255, 0.08)'}`,
                 borderRadius: 16,
-                padding: 16,
-                cursor: 'pointer',
-                textAlign: 'center',
-                transition: 'all 0.2s',
+                padding: '16px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 8
+                textAlign: 'center',
+                gap: 10,
+                cursor: 'pointer',
+                backdropFilter: 'blur(12px)',
+                boxShadow: isSelected ? `0 0 24px ${card.color}40` : '0 4px 16px rgba(0,0,0,0.3)',
+                transition: 'all 0.2s'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.boxShadow = `0 8px 24px ${card.color}30`;
-                e.currentTarget.style.background = `${card.color}15`;
+                e.currentTarget.style.borderColor = card.color;
+                e.currentTarget.style.boxShadow = `0 0 20px ${card.color}30`;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'none';
-                e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.background = 'rgba(18, 22, 33, 0.75)';
+                e.currentTarget.style.borderColor = isSelected ? card.color : 'rgba(255, 255, 255, 0.08)';
+                e.currentTarget.style.boxShadow = isSelected ? `0 0 24px ${card.color}40` : '0 4px 16px rgba(0,0,0,0.3)';
               }}
             >
-              <div style={{ fontSize: 32, lineHeight: 1 }}>{card.emoji}</div>
-              <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{card.label}</div>
-              <div style={{ fontSize: 10, color: '#8a99ad', lineClamp: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                Tap to vocalize
+              {/* Symbol */}
+              <div style={{
+                fontSize: 38,
+                width: 56,
+                height: 56,
+                borderRadius: 16,
+                background: `${card.color}15`,
+                border: `1px solid ${card.color}40`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: `0 0 16px ${card.color}20`
+              }}>
+                {card.emoji}
+              </div>
+
+              {/* Label */}
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>
+                  {card.label}
+                </div>
+                <div style={{ fontSize: 10, color: '#8a99ad', marginTop: 2 }}>
+                  🤟 {card.sign}
+                </div>
+              </div>
+
+              {/* Tap Indicator */}
+              <div style={{
+                marginTop: 'auto',
+                fontSize: 10,
+                fontWeight: 700,
+                color: card.color,
+                background: `${card.color}10`,
+                padding: '3px 8px',
+                borderRadius: 8
+              }}>
+                🔊 Tap to Speak
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
       </div>
     </div>
   );

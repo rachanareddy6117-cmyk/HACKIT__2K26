@@ -1,6 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import CameraView from './CameraView';
 import HandTracker from './HandTracker';
+import DeafDumbGridModule from './DeafDumbGridModule';
+import AutismSupportModule from './AutismSupportModule';
 import { sendChatMessage } from '../services/api';
 
 export default function LiveWorkspaceView({
@@ -339,7 +341,7 @@ export default function LiveWorkspaceView({
           </div>
         </div>
 
-        {/* Center Feed */}
+        {/* Center Feed / Grid View */}
         <div style={{
           background: 'rgba(18, 22, 33, 0.7)',
           border: '1px solid rgba(255, 255, 255, 0.08)',
@@ -348,97 +350,110 @@ export default function LiveWorkspaceView({
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
-          minHeight: 0
+          minHeight: 0,
+          overflowY: 'auto'
         }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: '1rem'
-          }}>
-            <span style={{
-              background: '#00f2fe',
-              color: '#000',
-              fontSize: '0.7rem',
-              fontWeight: 700,
-              padding: '2px 8px',
-              borderRadius: 4
-            }}>
-              • LIVE
-            </span>
-            <span style={{ fontSize: '0.8rem', color: '#8a99ad' }}>
-              👋 {handCount} hand detected
-            </span>
-          </div>
+          {activeNav === 'autism' ? (
+            <AutismSupportModule />
+          ) : activeNav === 'practice' || activeNav === 'deaf_grid' ? (
+            <DeafDumbGridModule onSelectSign={(sym) => {
+              setDetectedSign(`${sym.title} ${sym.emoji}`);
+              setConfidence(98);
+            }} />
+          ) : (
+            <>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '1rem'
+              }}>
+                <span style={{
+                  background: '#00f2fe',
+                  color: '#000',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  padding: '2px 8px',
+                  borderRadius: 4
+                }}>
+                  • LIVE
+                </span>
+                <span style={{ fontSize: '0.8rem', color: '#8a99ad' }}>
+                  👋 {handCount} hand detected
+                </span>
+              </div>
 
-          <div style={{
-            flex: 1,
-            background: '#000',
-            borderRadius: 12,
-            border: '1px solid rgba(0, 242, 254, 0.2)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            {/* Camera View & Hand Landmark Tracker */}
-            <div style={{ position: 'absolute', inset: 0 }}>
-              <CameraView ref={cameraRef} />
-              <HandTracker
-                videoElement={cameraRef.current?.getVideoElement()}
-                isCameraActive={isCameraActive}
-                onGestureDetected={handleGestureDetected}
-              />
-            </div>
-
-            {/* Fallback SVG Mesh Overlay matching the user HTML template */}
-            <svg
-              width="180"
-              height="180"
-              viewBox="0 0 200 200"
-              fill="none"
-              stroke="#00f2fe"
-              strokeWidth="2"
-              strokeLinecap="round"
-              style={{
+              <div style={{
+                flex: 1,
+                minHeight: 340,
+                background: '#000',
+                borderRadius: 12,
+                border: '1px solid rgba(0, 242, 254, 0.2)',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
                 position: 'relative',
-                zIndex: 2,
-                pointerEvents: 'none',
-                opacity: 0.85,
-                filter: 'drop-shadow(0 0 8px #00f2fe)'
-              }}
-            >
-              <path d="M 100 150 L 100 110 M 100 110 L 80 80 M 80 80 L 70 50 M 100 110 L 100 70 M 100 70 L 100 35 M 100 110 L 120 75 L 120 75 L 130 45 M 100 110 L 140 85 M 140 85 L 155 60 L 100 150 L 65 130 M 65 130 L 45 110" />
-              <circle cx="100" cy="150" r="3" fill="#00f2fe" />
-              <circle cx="100" cy="110" r="3" fill="#00f2fe" />
-              <circle cx="70" cy="50" r="3" fill="#00f2fe" />
-              <circle cx="100" cy="35" r="3" fill="#00f2fe" />
-              <circle cx="130" cy="45" r="3" fill="#00f2fe" />
-              <circle cx="155" cy="60" r="3" fill="#00f2fe" />
-            </svg>
+                overflow: 'hidden'
+              }}>
+                {/* Camera View & Hand Landmark Tracker */}
+                <div style={{ position: 'absolute', inset: 0 }}>
+                  <CameraView ref={cameraRef} />
+                  <HandTracker
+                    videoElement={cameraRef.current?.getVideoElement()}
+                    isCameraActive={isCameraActive}
+                    onGestureDetected={handleGestureDetected}
+                  />
+                </div>
 
-            {/* Live Detected Overlay Badge */}
-            <div style={{
-              position: 'absolute',
-              bottom: '1.5rem',
-              left: '1.5rem',
-              background: 'rgba(18, 22, 33, 0.85)',
-              border: '1px solid #00f2fe',
-              borderRadius: 12,
-              padding: '0.75rem 1.25rem',
-              backdropFilter: 'blur(8px)',
-              zIndex: 10,
-              boxShadow: '0 4px 20px rgba(0,242,254,0.15)'
-            }}>
-              <div style={{ fontSize: '0.9rem', color: '#fff' }}>
-                Detected Sign: <strong style={{ color: '#00f2fe' }}>{detectedSign}</strong>
+                {/* Fallback SVG Mesh Overlay matching the user HTML template */}
+                <svg
+                  width="180"
+                  height="180"
+                  viewBox="0 0 200 200"
+                  fill="none"
+                  stroke="#00f2fe"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  style={{
+                    position: 'relative',
+                    zIndex: 2,
+                    pointerEvents: 'none',
+                    opacity: 0.85,
+                    filter: 'drop-shadow(0 0 8px #00f2fe)'
+                  }}
+                >
+                  <path d="M 100 150 L 100 110 M 100 110 L 80 80 M 80 80 L 70 50 M 100 110 L 100 70 M 100 70 L 100 35 M 100 110 L 120 75 L 120 75 L 130 45 M 100 110 L 140 85 M 140 85 L 155 60 L 100 150 L 65 130 M 65 130 L 45 110" />
+                  <circle cx="100" cy="150" r="3" fill="#00f2fe" />
+                  <circle cx="100" cy="110" r="3" fill="#00f2fe" />
+                  <circle cx="70" cy="50" r="3" fill="#00f2fe" />
+                  <circle cx="100" cy="35" r="3" fill="#00f2fe" />
+                  <circle cx="130" cy="45" r="3" fill="#00f2fe" />
+                  <circle cx="155" cy="60" r="3" fill="#00f2fe" />
+                </svg>
+
+                {/* Live Detected Overlay Badge */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '1.5rem',
+                  left: '1.5rem',
+                  background: 'rgba(18, 22, 33, 0.85)',
+                  border: '1px solid #00f2fe',
+                  borderRadius: 12,
+                  padding: '0.75rem 1.25rem',
+                  backdropFilter: 'blur(8px)',
+                  zIndex: 10,
+                  boxShadow: '0 4px 20px rgba(0,242,254,0.15)'
+                }}>
+                  <div style={{ fontSize: '0.9rem', color: '#fff' }}>
+                    Detected Sign: <strong style={{ color: '#00f2fe' }}>{detectedSign}</strong>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#8a99ad', marginTop: 2 }}>
+                    Confidence: {confidence}%
+                  </div>
+                </div>
               </div>
-              <div style={{ fontSize: '0.75rem', color: '#8a99ad', marginTop: 2 }}>
-                Confidence: {confidence}%
-              </div>
-            </div>
-          </div>
+            </>
+          )}
         </div>
 
         {/* Right AI Chat */}

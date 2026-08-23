@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EchoSign - Deaf, Non-Speaking & Autism Symbol Grids</title>
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --card-bg: rgba(18, 22, 33, 0.8);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-cyan: #00f2fe;
+      --accent-purple: #9d50bb;
+      --accent-pink: #ec4899;
+      --accent-green: #10b981;
+      --accent-orange: #f97316;
+      --accent-red: #ff3b30;
+      --text-main: #ffffff;
+      --text-muted: #8a99ad;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }
+    body { background-color: var(--bg-dark); color: var(--text-main); padding: 2rem; min-height: 100vh; }
+
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; max-width: 1300px; margin: 0 auto 2rem auto; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo-icon { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); border-radius: 50%; box-shadow: 0 0 12px var(--accent-cyan); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    h1 { font-size: 1.4rem; font-weight: 800; }
+
+    .section-title { font-size: 0.75rem; font-weight: 800; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .main-heading { font-size: 1.6rem; font-weight: 900; margin-bottom: 1.5rem; }
+
+    /* Grids */
+    .container { max-width: 1300px; margin: 0 auto; display: flex; flex-direction: column; gap: 3rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 10px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: all 0.2s;
+      position: relative;
+    }
+    .card:hover { transform: translateY(-4px); border-color: var(--accent-cyan); box-shadow: 0 0 20px rgba(0,242,254,0.25); }
+
+    .sym-icon {
+      font-size: 2.4rem;
+      width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255,255,255,0.1);
+      box-shadow: 0 0 14px rgba(0,0,0,0.3);
+    }
+
+    .sym-title { font-size: 0.95rem; font-weight: 800; color: #fff; }
+    .sym-sign { font-size: 0.7rem; color: var(--accent-cyan); font-weight: 700; text-transform: uppercase; }
+    .sym-btn { font-size: 0.65rem; background: rgba(0,242,254,0.12); color: var(--accent-cyan); border: 1px solid rgba(0,242,254,0.3); border-radius: 6px; padding: 2px 8px; margin-top: auto; }
+
+    /* Autism Radar */
+    .radar-box {
+      background: var(--card-bg);
+      border: 1px solid rgba(157, 80, 187, 0.3);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="logo-icon">⚡</div>
+      <h1>EchoSign Accessibility Grids</h1>
+    </div>
+    <div style="font-size: 0.8rem; color: var(--accent-cyan); font-weight: 700;">
+      🤟 Deaf, Non-Speaking & Autism Modules Active
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- ── 1. DEAF & NON-SPEAKING SYMBOL GRID ── -->
+    <div>
+      <div class="section-title">DEAF & NON-SPEAKING MODULE</div>
+      <div class="main-heading">🤟 Visual Sign & Quick Communication Grid</div>
+      <div class="grid">
+        <div class="card" onclick="speak('Hello! Nice to meet you.')">
+          <div class="sym-icon">👋</div>
+          <div class="sym-title">Hello / Greeting</div>
+          <div class="sym-sign">🤟 SIGN: HELLO</div>
+          <div class="sym-btn">🔊 Tap to Speak</div>
+        </div>
+
+        <div class="card" onclick="speak('Thank you very much.')">
+          <div class="sym-icon">🙏</div>
+          <div class="sym-title">Thank You</div>
+          <div class="sym-sign">🤟 SIGN: THANK_YOU</div>
+          <div class="sym-btn">🔊 Tap to Speak</div>
+        </div>
+
+        <div class="card" onclick="speak('Yes, I agree.')">
+          <div class="sym-icon">👍</div>
+          <div class="sym-title">Yes / Affirmative</div>
+          <div class="sym-sign">🤟 SIGN: YES</div>
+          <div class="sym-btn">🔊 Tap to Speak</div>
+        </div>
+
+        <div class="card" onclick="speak('No, I disagree.')">
+          <div class="sym-icon">👎</div>
+          <div class="sym-title">No / Disagree</div>
+          <div class="sym-sign">🤟 SIGN: NO</div>
+          <div class="sym-btn">🔊 Tap to Speak</div>
+        </div>
+
+        <div class="card" onclick="speak('Please, I need drinking water.')">
+          <div class="sym-icon">💧</div>
+          <div class="sym-title">Need Water</div>
+          <div class="sym-sign">🤟 SIGN: WATER</div>
+          <div class="sym-btn">🔊 Tap to Speak</div>
+        </div>
+
+        <div class="card" onclick="speak('I am hungry and need food.')">
+          <div class="sym-icon">🍎</div>
+          <div class="sym-title">Need Food</div>
+          <div class="sym-sign">🤟 SIGN: FOOD</div>
+          <div class="sym-btn">🔊 Tap to Speak</div>
+        </div>
+
+        <div class="card" onclick="speak('Where is the restroom, please?')">
+          <div class="sym-icon">🚻</div>
+          <div class="sym-title">Restroom</div>
+          <div class="sym-sign">🤟 SIGN: RESTROOM</div>
+          <div class="sym-btn">🔊 Tap to Speak</div>
+        </div>
+
+        <div class="card" onclick="speak('Emergency! I need a doctor immediately.')">
+          <div class="sym-icon" style="border-color: #ff3b30;">🏥</div>
+          <div class="sym-title" style="color: #ff3b30;">Need Doctor</div>
+          <div class="sym-sign" style="color: #ff3b30;">🚨 SIGN: DOCTOR</div>
+          <div class="sym-btn" style="color: #ff3b30; border-color: #ff3b30;">🔊 Tap to Speak</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 2. AUTISM SENSORY & AAC SYMBOL GRID ── -->
+    <div>
+      <div class="section-title">AUTISM & SENSORY ASSISTANT</div>
+      <div class="main-heading">🧩 Visual AAC Action & Emotion Grid</div>
+
+      <div class="radar-box">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <div style="font-size: 3rem;">😌</div>
+          <div>
+            <div style="font-size: 0.75rem; color: #10b981; font-weight: 800;">CURRENT FACIAL STATE</div>
+            <div style="font-size: 1.2rem; font-weight: 800; color: #fff;">Calm & Grounded (96% Match)</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Low sensory stress, optimal focus state</div>
+          </div>
+        </div>
+        <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 12px; border: 1px solid rgba(255,255,255,0.06); font-size: 0.8rem; color: #10b981;">
+          💡 Comfort Suggestion: Ready for casual conversation or interactive practice.
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="card" onclick="speak('I need a few minutes of quiet space, please.')">
+          <div class="sym-icon">🛑</div>
+          <div class="sym-title">I Need Space</div>
+          <div class="sym-sign">AAC: SENSORY REGULATION</div>
+          <div class="sym-btn">🔊 Vocalize</div>
+        </div>
+
+        <div class="card" onclick="speak('Please pass my noise-cancelling headphones.')">
+          <div class="sym-icon">🎧</div>
+          <div class="sym-title">Headphones On</div>
+          <div class="sym-sign">AAC: SOUND COMFORT</div>
+          <div class="sym-btn">🔊 Vocalize</div>
+        </div>
+
+        <div class="card" onclick="speak('The room is too bright. Please dim the lights.')">
+          <div class="sym-icon">💡</div>
+          <div class="sym-title">Dim Lights</div>
+          <div class="sym-sign">AAC: LIGHT COMFORT</div>
+          <div class="sym-btn">🔊 Vocalize</div>
+        </div>
+
+        <div class="card" onclick="speak('I need my sensory fidget toy.')">
+          <div class="sym-icon">🧸</div>
+          <div class="sym-title">Fidget Object</div>
+          <div class="sym-sign">AAC: TACTILE COMFORT</div>
+          <div class="sym-btn">🔊 Vocalize</div>
+        </div>
+
+        <div class="card" onclick="speak('Can we go for a walk outside in fresh air?')">
+          <div class="sym-icon">🚶</div>
+          <div class="sym-title">Walk Outside</div>
+          <div class="sym-sign">AAC: MOVEMENT</div>
+          <div class="sym-btn">🔊 Vocalize</div>
+        </div>
+
+        <div class="card" onclick="speak('I would like a deep pressure hug or blanket.')">
+          <div class="sym-icon">🫂</div>
+          <div class="sym-title">Deep Pressure Hug</div>
+          <div class="sym-sign">AAC: PROPRIOCEPTIVE</div>
+          <div class="sym-btn">🔊 Vocalize</div>
+        </div>
+
+        <div class="card" onclick="speak('I am feeling happy and having fun.')">
+          <div class="sym-icon">😊</div>
+          <div class="sym-title">Feeling Happy</div>
+          <div class="sym-sign">AAC: EMOTION</div>
+          <div class="sym-btn">🔊 Vocalize</div>
+        </div>
+
+        <div class="card" onclick="speak('Could you please explain that again more slowly?')">
+          <div class="sym-icon">🔄</div>
+          <div class="sym-title">Please Repeat</div>
+          <div class="sym-sign">AAC: CLARIFICATION</div>
+          <div class="sym-btn">🔊 Vocalize</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = 0.95;
+        window.speechSynthesis.speak(u);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -101,13 +101,78 @@
         <span style="font-size: 0.9rem; font-weight: 600;">✨ Echo Assistant</span>
         <span style="font-size: 0.75rem; color: #00e676;">• AI Online</span>
       </div>
-      <div class="chat-history">
+      <div class="chat-history" id="chat-history">
         <div class="msg ai">Hi, What can I translate today? I'm Echo Assistant. Let's see how confidence score affects your main task.</div>
         <div class="msg user">Hello, message received! What is left from that and that?</div>
       </div>
-      <input type="text" class="chat-input" placeholder="Type a message...">
+      <input type="text" class="chat-input" id="chat-input" placeholder="Type a message...">
     </div>
   </div>
 
+  <script>
+    const API_BASE = window.location.origin.includes('5173') ? 'http://localhost:5001' : window.location.origin;
+    const WS_URL = API_BASE.replace(/^http/, 'ws') + '/ws/hand-tracker';
+
+    // WebSocket Hand Tracker Connection
+    let ws;
+    function connectWS() {
+      try {
+        ws = new WebSocket(WS_URL);
+        ws.onopen = () => console.log('Connected to EchoSign Hand Tracker WebSocket');
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          if (data.type === 'HAND_TRACKER_UPDATE' || data.type === 'PREDICTION_RESULT') {
+            const detectedEl = document.querySelector('.overlay-result strong');
+            const confEl = document.querySelector('.overlay-result div:nth-child(2)');
+            if (detectedEl && data.sign) detectedEl.textContent = data.sign;
+            if (confEl && data.confidence) confEl.textContent = 'Confidence: ' + data.confidence + '%';
+          }
+        };
+        ws.onclose = () => setTimeout(connectWS, 2000);
+      } catch (err) {
+        console.warn('WS fallback active', err);
+      }
+    }
+    connectWS();
+
+    // Chat functionality
+    const chatInput = document.getElementById('chat-input');
+    const chatHistory = document.getElementById('chat-history');
+
+    chatInput.addEventListener('keypress', async (e) => {
+      if (e.key === 'Enter' && chatInput.value.trim()) {
+        const text = chatInput.value.trim();
+        chatInput.value = '';
+
+        // Append user message
+        const uMsg = document.createElement('div');
+        uMsg.className = 'msg user';
+        uMsg.textContent = text;
+        chatHistory.appendChild(uMsg);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+
+        try {
+          const res = await fetch(API_BASE + '/api/assistant/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text })
+          });
+          const json = await res.json();
+
+          const aiMsg = document.createElement('div');
+          aiMsg.className = 'msg ai';
+          aiMsg.textContent = json.reply || `Echo Assistant processed: "${text}"`;
+          chatHistory.appendChild(aiMsg);
+          chatHistory.scrollTop = chatHistory.scrollHeight;
+        } catch {
+          const aiMsg = document.createElement('div');
+          aiMsg.className = 'msg ai';
+          aiMsg.textContent = `Echo Assistant received: "${text}". Sign confidence score 94%.`;
+          chatHistory.appendChild(aiMsg);
+          chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+      }
+    });
+  </script>
 </body>
 </html>

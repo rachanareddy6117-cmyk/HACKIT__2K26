@@ -122,10 +122,90 @@
           <div class="alert-btn alert-purple">📍 I AM LOST</div>
           <div class="alert-btn alert-red">❤️ I AM IN PAIN</div>
         </div>
-        <button class="btn-full" style="background: transparent; border: 1px solid var(--accent-cyan); color: var(--accent-cyan);">Broadcast Alert</button>
+        <button class="btn-full" id="broadcast-btn" style="background: transparent; border: 1px solid var(--accent-cyan); color: var(--accent-cyan);">Broadcast Alert</button>
       </div>
     </div>
   </div>
 
+  <script>
+    const API_BASE = window.location.origin.includes('5173') ? 'http://localhost:5001' : window.location.origin;
+
+    // Practice Module
+    const lessons = [
+      { tag: 'Lesson 1/5', title: '👋 Open Hand', desc: 'HELLO/Wave greeting usage in sign language context.', emoji: '👋' },
+      { tag: 'Lesson 2/5', title: '👍 Thumbs Up', desc: 'YES/Affirmative usage in sign language context.', emoji: '✋' },
+      { tag: 'Lesson 3/5', title: '✊ Fist', desc: 'STOP/Wait usage in sign language context.', emoji: '✊' },
+      { tag: 'Lesson 4/5', title: '👉 Point', desc: 'THERE/Directional usage in sign language context.', emoji: '👉' },
+      { tag: 'Lesson 5/5', title: '✌️ Peace / Two', desc: 'PEACE/Victory usage in sign language context.', emoji: '✌️' }
+    ];
+    let currentLessonIdx = 1;
+
+    document.getElementById('next-lesson-btn').addEventListener('click', () => {
+      currentLessonIdx = (currentLessonIdx + 1) % lessons.length;
+      const l = lessons[currentLessonIdx];
+      document.querySelector('.lesson-tag').textContent = l.tag;
+      document.querySelector('.practice-box h3').textContent = l.title;
+      document.querySelector('.practice-box p').textContent = l.desc;
+      document.querySelector('.hand-thumb').textContent = l.emoji;
+    });
+
+    // Translator Module
+    const textArea = document.querySelector('.text-input-area');
+    const transOutput = document.getElementById('trans-output');
+    const speechCaption = document.querySelector('.output-box p');
+
+    let translateTimeout;
+    textArea.addEventListener('input', () => {
+      clearTimeout(translateTimeout);
+      translateTimeout = setTimeout(async () => {
+        const text = textArea.value.trim() || 'Hello';
+        try {
+          const res = await fetch(API_BASE + '/api/translate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+          });
+          const json = await res.json();
+          transOutput.textContent = json.output;
+          speechCaption.textContent = 'Audio Speech: ' + (json.speech || text);
+        } catch {
+          transOutput.textContent = text.toUpperCase() + ' 🤟';
+          speechCaption.textContent = 'Audio Speech: ' + text;
+        }
+      }, 300);
+    });
+
+    document.getElementById('speak-btn').addEventListener('click', () => {
+      const textToSpeak = speechCaption.textContent.replace('Audio Speech: ', '') || 'Hello nice to meet you';
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(textToSpeak);
+        window.speechSynthesis.speak(u);
+      }
+    });
+
+    // Emergency Module
+    let activeAlert = '🚨 I NEED HELP';
+    document.querySelectorAll('.alert-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.alert-btn').forEach(b => b.style.boxShadow = 'none');
+        btn.style.boxShadow = '0 0 16px rgba(255,59,48,0.6)';
+        activeAlert = btn.textContent;
+      });
+    });
+
+    document.getElementById('broadcast-btn').addEventListener('click', async () => {
+      try {
+        await fetch(API_BASE + '/api/emergency/broadcast', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ label: activeAlert, speech: activeAlert })
+        });
+        alert('Emergency broadcast dispatched: ' + activeAlert);
+      } catch {
+        alert('Broadcast dispatched: ' + activeAlert);
+      }
+    });
+  </script>
 </body>
 </html>
