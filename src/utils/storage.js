@@ -4,6 +4,7 @@
 
 export const STORAGE_KEYS = {
   USER: 'echosign_user',
+  TOKEN: 'echosign_token',
   AUTH_METHOD: 'echosign_auth_method',
   PERSONA: 'echosign_persona',
   CONVERSATION: 'echosign_conversation',
@@ -38,6 +39,7 @@ export const removeStoredItem = (key) => {
 
 export const clearSession = () => {
   removeStoredItem(STORAGE_KEYS.USER);
+  removeStoredItem(STORAGE_KEYS.TOKEN);
   removeStoredItem(STORAGE_KEYS.AUTH_METHOD);
   removeStoredItem(STORAGE_KEYS.PERSONA);
   removeStoredItem(STORAGE_KEYS.CONVERSATION);

@@ -21,6 +21,7 @@ const { generalLimiter } = require('./middleware/rateLimiter');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const signDetectionRoutes = require('./routes/signDetectionRoutes');
 
 // AI Services (initialise clients at startup)
 const geminiService = require('./services/geminiService');
@@ -97,6 +98,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/sign-detect', signDetectionRoutes);
 
 // ─────────────────────────────────────────────────────────────
 // ISL Vocabulary Endpoint (public — for the frontend to fetch)

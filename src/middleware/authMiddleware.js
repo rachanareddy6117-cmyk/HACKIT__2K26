@@ -9,6 +9,7 @@ const { AppError } = require('./errorHandler');
 const { HTTP_STATUS } = require('../constants');
 const authService = require('../services/authService');
 const logger = require('../utils/logger');
+const jwt = require('jsonwebtoken');
 
 /**
  * Middleware: require a valid bearer token.
@@ -35,8 +36,25 @@ async function requireAuth(req, res, next) {
       );
     }
 
-    // Look up the session by token
+    // Support both opaque session IDs and JWTs issued by the legacy root server.
     const session = await authService.getSession(token);
+
+    if (!session) {
+      try {
+        const payload = jwt.verify(token, process.env.JWT_SECRET || 'echosign_production_jwt_secret_key_8f93a1c4b2e5d');
+        req.user = {
+          id: payload.userId,
+          userId: payload.userId,
+          email: payload.email,
+          role: payload.role,
+        };
+        req.token = token;
+        logger.debug(`Authenticated JWT user: ${payload.userId}`, 'Auth');
+        return next();
+      } catch {
+        // Continue with the standard session error below.
+      }
+    }
 
     if (!session) {
       throw new AppError(

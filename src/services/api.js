@@ -4,6 +4,8 @@
  * and python microservice on port 8000.
  */
 
+import { STORAGE_KEYS } from '../utils/storage';
+
 let activeApiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
 const INFERENCE_BASE = import.meta.env.VITE_INFERENCE_URL || 'http://localhost:8000';
 
@@ -13,7 +15,10 @@ async function post(path, body, customBase) {
     try {
       const res = await fetch(`${base}${path}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
+        },
         body: JSON.stringify(body),
       });
       if (res.ok) {
@@ -31,7 +36,7 @@ async function get(path, customBase) {
   const candidateBases = customBase ? [customBase] : [activeApiBase, 'http://localhost:5002', 'http://localhost:5001', 'http://localhost:5000'];
   for (const base of candidateBases) {
     try {
-      const res = await fetch(`${base}${path}`);
+      const res = await fetch(`${base}${path}`, { headers: getAuthHeaders() });
       if (res.ok) {
         activeApiBase = base;
         return await res.json();
@@ -41,6 +46,15 @@ async function get(path, customBase) {
     }
   }
   return null;
+}
+
+function getAuthHeaders() {
+  try {
+    const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
 }
 
 /** Check Server & AI Health */
@@ -136,7 +150,7 @@ export async function predictLandmarks(hand_landmarks) {
   if (result && result.gloss) return result;
 
   // Fallback to Express backend inference
-  result = await post('/api/predict/landmarks', { hand_landmarks }, API_BASE);
+  result = await post('/api/predict/landmarks', { hand_landmarks }, INFERENCE_BASE);
   if (result && result.gloss) return result;
 
   return {
@@ -145,6 +159,106 @@ export async function predictLandmarks(hand_landmarks) {
     debounced: true,
     timestamp: new Date().toISOString(),
     all_gloss_candidates: [{ gloss: 'HELLO', confidence: 0.94 }]
+  };
+}
+
+/** ========================================================================
+ * SIGN DETECTION API — Real-time hand gesture recognition
+ * ========================================================================
+ */
+
+/** POST /api/sign-detect/landmarks — Detect sign from hand landmarks */
+export async function detectSignFromLandmarks(hand_landmarks, confidence_threshold = 0.7) {
+  const result = await post('/api/sign-detect/landmarks', {
+    hand_landmarks,
+    confidence_threshold
+  });
+  
+  if (result && result.success) return result;
+
+  // Fallback response
+  return {
+    success: true,
+    gloss: 'NO_SIGN_DETECTED',
+    confidence: 0,
+    emoji: '✋',
+    speech: 'No sign detected',
+    message: 'API unavailable, local fallback'
+  };
+}
+
+/** POST /api/sign-detect/batch — Process multiple frames for better accuracy */
+export async function detectSignFromBatch(frames, window_size = 5) {
+  const result = await post('/api/sign-detect/batch', {
+    frames,
+    window_size
+  });
+  
+  if (result && result.success) return result;
+
+  return {
+    success: true,
+    gloss: 'NO_SIGN_DETECTED',
+    confidence: 0,
+    message: 'Batch processing unavailable'
+  };
+}
+
+/** POST /api/sign-detect/to-text — Convert gloss to English text */
+export async function glossToText(gloss) {
+  const result = await post('/api/sign-detect/to-text', { gloss });
+  
+  if (result && result.success) return result;
+
+  return {
+    success: true,
+    gloss: gloss.toUpperCase(),
+    text: gloss.toLowerCase(),
+    source: 'fallback'
+  };
+}
+
+/** POST /api/sign-detect/to-speech — Convert gloss to audio */
+export async function glossToSpeech(gloss, audio_format = 'mp3') {
+  const result = await post('/api/sign-detect/to-speech', {
+    gloss,
+    audio_format
+  });
+  
+  if (result && result.success) return result;
+
+  return {
+    success: true,
+    gloss: gloss.toUpperCase(),
+    message: 'Use browser Web Speech API for audio',
+    mime_type: `audio/${audio_format}`
+  };
+}
+
+/** GET /api/sign-detect/vocabulary — Get all supported ISL glosses */
+export async function getSignVocabulary() {
+  const result = await get('/api/sign-detect/vocabulary');
+  
+  if (result && result.success) return result;
+
+  return {
+    success: true,
+    glosses: [],
+    total: 0,
+    categories: []
+  };
+}
+
+/** GET /api/sign-detect/health — Check inference service health */
+export async function checkSignDetectionHealth() {
+  const result = await get('/api/sign-detect/health');
+  
+  if (result && result.success) return result;
+
+  return {
+    success: false,
+    status: 'unhealthy',
+    message: 'Inference service unavailable'
   };
 }
 

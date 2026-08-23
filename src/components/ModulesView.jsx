@@ -103,8 +103,8 @@ export default function ModulesView({ onNavigateWorkspace, user, persona, onLogo
       padding: '2rem',
       fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif"
     }}>
-      {/* Header */}
-      <header style={{
+      {/* Global header removed; navigation is owned by the dashboard drawer. */}
+      {false && <header style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -166,7 +166,7 @@ export default function ModulesView({ onNavigateWorkspace, user, persona, onLogo
             </button>
           )}
         </div>
-      </header>
+      </header>}
 
       {/* 3-Column Grid */}
       <div style={{

@@ -8,6 +8,7 @@ import PersonaSelection from './components/PersonaSelection';
 import Dashboard from './components/Dashboard';
 import ModulesView from './components/ModulesView';
 import LiveWorkspaceView from './components/LiveWorkspaceView';
+import PeerConnectModule from './components/PeerConnectModule';
 import { getStoredItem, STORAGE_KEYS } from './utils/storage';
 
 export default function App() {
@@ -73,8 +74,8 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#07090e', color: '#ffffff', fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" }}>
-      {/* ── TOP GLOBAL MODE SWITCHER BAR (Direct Access to All 4 Views) ── */}
-      <div style={{
+      {/* Legacy global navigation is intentionally removed; Dashboard owns navigation. */}
+      {false && <div style={{
         background: 'rgba(5, 7, 10, 0.95)',
         borderBottom: '1px solid rgba(0, 242, 254, 0.18)',
         backdropFilter: 'blur(20px)',
@@ -229,7 +230,7 @@ export default function App() {
             {user ? 'Account' : 'Sign Up'}
           </button>
         </div>
-      </div>
+      </div>}
 
       {/* ── SCREEN RENDERING ── */}
       {screen === 'landing' && (

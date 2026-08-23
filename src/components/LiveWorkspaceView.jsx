@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import CameraView from './CameraView';
 import HandTracker from './HandTracker';
+import SignIllustration from './SignIllustration';
 import { sendChatMessage } from '../services/api';
 
 export default function LiveWorkspaceView({
@@ -30,6 +31,9 @@ export default function LiveWorkspaceView({
   const [handCount, setHandCount] = useState(1);
   const [isCameraActive, setIsCameraActive] = useState(true);
   const [aiTyping, setAiTyping] = useState(false);
+  const [targetIndex, setTargetIndex] = useState(0);
+  const [matchFeedback, setMatchFeedback] = useState(false);
+  const targetSigns = ['HELLO', 'THANK YOU', 'HELP', 'YES'];
 
   const cameraRef = useRef(null);
 
@@ -38,6 +42,13 @@ export default function LiveWorkspaceView({
       setDetectedSign(`${gesture.meta.text} ${gesture.meta.emoji || '🤟'}`);
       setConfidence(Math.round((gesture.confidence || 0.94) * 100));
       setHandCount(1);
+      if (gesture.meta.text.toUpperCase() === targetSigns[targetIndex]) {
+        setMatchFeedback(true);
+        window.setTimeout(() => {
+          setTargetIndex(index => (index + 1) % targetSigns.length);
+          setMatchFeedback(false);
+        }, 1200);
+      }
     }
   };
 
@@ -99,8 +110,8 @@ export default function LiveWorkspaceView({
       fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif",
       overflow: 'hidden'
     }}>
-      {/* Top Bar */}
-      <header style={{
+      {/* Global header removed; workspace controls remain available in the drawer. */}
+      {false && <header style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -193,7 +204,7 @@ export default function LiveWorkspaceView({
             </button>
           )}
         </div>
-      </header>
+      </header>}
 
       {/* Main Grid Layout */}
       <div style={{
@@ -419,6 +430,12 @@ export default function LiveWorkspaceView({
             </svg>
 
             {/* Live Detected Overlay Badge */}
+            <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, padding: '0.5rem', borderRadius: 12, background: 'rgba(5,7,10,0.85)', border: '1px solid rgba(0,242,254,0.45)', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.6rem', color: '#8a99ad', textTransform: 'uppercase', fontWeight: 800 }}>Reference Sign</div>
+              <SignIllustration sign={targetSigns[targetIndex]} emoji="🤟" size={48} />
+              <div style={{ fontSize: '0.65rem', color: '#00f2fe', fontWeight: 800 }}>{targetSigns[targetIndex]}</div>
+            </div>
+            {matchFeedback && <div style={{ position: 'absolute', inset: 0, zIndex: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#22c55e', fontSize: '5rem', fontWeight: 900, animation: 'fadeIn 0.2s ease-out', pointerEvents: 'none' }}>✓</div>}
             <div style={{
               position: 'absolute',
               bottom: '1.5rem',

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { ArrowRight, Volume2, Type, Mic, Eye, Globe, Sparkles } from 'lucide-react';
-import { translateApi } from '../services/api';
+import React, { useRef, useState } from 'react';
+import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
+import { ArrowRight, Volume2, Type, Mic, Eye, Globe, Sparkles, Upload, Loader2 } from 'lucide-react';
+import { detectSignFromBatch, glossToText, translateApi } from '../services/api';
 
 const TABS = [
   { id: 'TEXT',   label: 'TEXT',   icon: Type },
@@ -16,6 +17,10 @@ export default function Translator() {
     speech: 'Hello! Nice to meet you.'
   });
   const [loading, setLoading] = useState(false);
+  const [videoFile, setVideoFile] = useState(null);
+  const [videoLoading, setVideoLoading] = useState(false);
+  const [videoStatus, setVideoStatus] = useState('');
+  const videoRef = useRef(null);
 
   const translate = async (e) => {
     e?.preventDefault();
@@ -39,6 +44,57 @@ export default function Translator() {
     if (window.speechSynthesis) {
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(new SpeechSynthesisUtterance(text));
+    }
+  };
+
+  const processVideo = async (file) => {
+    if (!file) return;
+    setVideoFile(file);
+    setVideoLoading(true);
+    setVideoStatus('Preparing video frames...');
+    try {
+      const video = videoRef.current;
+      video.src = URL.createObjectURL(file);
+      await new Promise((resolve, reject) => {
+        video.onloadedmetadata = resolve;
+        video.onerror = reject;
+      });
+      const vision = await FilesetResolver.forVisionTasks(
+        'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm'
+      );
+      const landmarker = await HandLandmarker.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath: 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+          delegate: 'GPU'
+        },
+        runningMode: 'VIDEO',
+        numHands: 2
+      });
+      const frames = [];
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const context = canvas.getContext('2d');
+      const frameCount = 8;
+      for (let index = 0; index < frameCount; index += 1) {
+        video.currentTime = (video.duration * index) / frameCount;
+        await new Promise(resolve => { video.onseeked = resolve; });
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const detection = landmarker.detectForVideo(video, Math.round(video.currentTime * 1000));
+        if (detection.landmarks?.[0]) frames.push({ hand_landmarks: detection.landmarks[0] });
+      }
+      landmarker.close();
+      if (!frames.length) throw new Error('No hands were detected in the video.');
+      setVideoStatus(`Detected ${frames.length} hand frames. Translating...`);
+      const batch = await detectSignFromBatch(frames, Math.min(frames.length, 5));
+      const gloss = batch?.gloss || batch?.glosses?.[0] || 'NO_SIGN_DETECTED';
+      const textResult = gloss === 'NO_SIGN_DETECTED' ? null : await glossToText(gloss);
+      setResult({ output: gloss, speech: textResult?.text || batch?.speech || 'No sign detected.' });
+      setVideoStatus('Video translation complete.');
+    } catch (error) {
+      setVideoStatus(error.message || 'Video processing failed.');
+    } finally {
+      setVideoLoading(false);
     }
   };
 
@@ -125,6 +181,13 @@ export default function Translator() {
                 </button>
               ))}
             </div>
+            <label className="flex items-center justify-center gap-2 p-3 rounded-xl text-xs font-bold cursor-pointer" style={{ border: '1px dashed rgba(0,229,255,0.35)', color: '#00e5ff', background: 'rgba(0,229,255,0.04)' }}>
+              {videoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              {videoLoading ? 'Processing video...' : 'Upload sign-language video'}
+              <input type="file" accept="video/*" className="hidden" disabled={videoLoading} onChange={event => processVideo(event.target.files?.[0])} />
+            </label>
+            <video ref={videoRef} className="hidden" muted playsInline />
+            {videoStatus && <div className="text-[10px] text-slate-400" role="status">{videoStatus}</div>}
           </div>
 
           <button
