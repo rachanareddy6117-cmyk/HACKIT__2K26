@@ -48,6 +48,7 @@ function GlobalNav({ user, onAccount }) {
       {/* Primary route links */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap', marginLeft: 8 }}>
         {[
+          { to: '/home',      label: '🏠 Home' },
           { to: '/',          label: '📑 Modules Dashboard', exact: true },
           { to: '/workspace', label: '💻 Live Workspace'  },
           { to: '/practice',  label: '📝 Practice Mode'   },
@@ -152,8 +153,9 @@ function AppShell() {
       {/* ── Main route views ── */}
       {!overlay && (
         <Routes>
-          {/* Core 4 routes specified in architecture */}
+          {/* Core routes */}
           <Route path="/"          element={<ModulesDashboard />} />
+          <Route path="/home"      element={<Landing onGetStarted={() => {}} onLogin={() => setOverlay('auth_select')} onSeeHowItWorks={() => {}} />} />
           <Route path="/modules"   element={<ModulesDashboard />} />
           <Route path="/workspace" element={<WorkspacePage />} />
           <Route path="/practice"  element={<PracticePage />} />

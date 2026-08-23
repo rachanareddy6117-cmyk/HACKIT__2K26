@@ -1114,7 +1114,18 @@ app.get(['/api/html/autism-deaf-modules', '/html/autism-deaf-modules'], (req, re
 });
 
 // ----------------------------------------------------
-// 5. SERVER LAUNCH
+// 5. PRODUCTION STATIC SERVING
+// ----------------------------------------------------
+// Serve the built React application from the 'dist' directory
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// For any request that doesn't match an API route or static file, send the React index.html
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});
+
+// ----------------------------------------------------
+// 6. SERVER LAUNCH
 // ----------------------------------------------------
 (async () => {
   const { port } = await listenWithFallback(server, BASE_PORT);

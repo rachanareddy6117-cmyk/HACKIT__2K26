@@ -21,13 +21,13 @@ export default function PracticeModule({ category = 'deaf_mute' }) {
 
   const isDeaf = activeCategory === 'deaf_mute';
 
-  // Handle successful hand match -> 5-second countdown & auto-advance
+  // Handle successful hand match -> 6-second countdown & auto-advance (5-10s range)
   const handleMatchSuccess = () => {
     if (isMatched) return;
     setIsMatched(true);
-    setCountdown(5);
+    setCountdown(6);
 
-    let timeLeft = 5;
+    let timeLeft = 6;
     timerRef.current = setInterval(() => {
       timeLeft -= 1;
       setCountdown(timeLeft);

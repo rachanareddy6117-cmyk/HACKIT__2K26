@@ -153,9 +153,77 @@ export function classifyGesture(landmarks) {
   return { sign: 'UNKNOWN', confidence: 0.60, text: 'GESTURE DETECTED', emoji: '✋' };
 }
 
+export const GESTURE_ALIASES = {
+  OPEN_HAND: ['OPEN_HAND', 'ASL_B', 'HELLO'],
+  THUMBS_UP: ['THUMBS_UP', 'YES'],
+  THUMBS_DOWN: ['THUMBS_DOWN', 'NO'],
+  FIST: ['FIST', 'ASL_A', 'STOP'],
+  POINT: ['POINT', 'ASL_D', 'ASL_L', 'THERE'],
+  TWO_FINGERS: ['TWO_FINGERS', 'ASL_V', 'PEACE', 'TWO'],
+  ASL_A: ['ASL_A', 'FIST', 'STOP'],
+  ASL_B: ['ASL_B', 'OPEN_HAND', 'FLAT_HAND'],
+  ASL_V: ['ASL_V', 'TWO_FINGERS', 'PEACE', 'TWO'],
+  ASL_ILY: ['ASL_ILY', 'ILY', 'I_LOVE_YOU'],
+  ASL_F: ['ASL_F', 'OK', 'MEDITATION_MUDRA'],
+  ASL_Y: ['ASL_Y', 'HORNS'],
+  ASL_W: ['ASL_W', 'THREE'],
+  ASL_I: ['ASL_I', 'PINKY'],
+  ASL_L: ['ASL_L', 'L_SHAPE'],
+  ASL_C: ['ASL_C', 'CURVED'],
+  PINCH: ['PINCH', 'WRITING_SIGN'],
+  MEDITATION_MUDRA: ['MEDITATION_MUDRA', 'ASL_F', 'PINCH'],
+  WALKING_FINGERS: ['WALKING_FINGERS', 'ASL_V', 'TWO_FINGERS', 'POINT'],
+  WRITING_SIGN: ['WRITING_SIGN', 'PINCH', 'ASL_A', 'FIST']
+};
+
 /**
- * Compares live hand landmarks against target skeleton template and sign rules
- * Returns a normalized match score between 0.0 and 1.0, and whether it counts as confirmed.
+ * High-accuracy reference skeleton templates for visual dotted-guide and geometric alignment
+ */
+export const TARGET_SKELETON_TEMPLATES = {
+  OPEN_HAND: [
+    {x:0.5, y:0.85},
+    {x:0.42, y:0.75}, {x:0.36, y:0.65}, {x:0.32, y:0.55}, {x:0.28, y:0.45},
+    {x:0.44, y:0.55}, {x:0.42, y:0.42}, {x:0.40, y:0.32}, {x:0.38, y:0.22},
+    {x:0.50, y:0.53}, {x:0.50, y:0.39}, {x:0.50, y:0.28}, {x:0.50, y:0.18},
+    {x:0.56, y:0.55}, {x:0.58, y:0.42}, {x:0.60, y:0.32}, {x:0.62, y:0.22},
+    {x:0.62, y:0.60}, {x:0.66, y:0.50}, {x:0.70, y:0.40}, {x:0.74, y:0.30}
+  ],
+  THUMBS_UP: [
+    {x:0.5, y:0.85},
+    {x:0.45, y:0.70}, {x:0.42, y:0.55}, {x:0.40, y:0.38}, {x:0.38, y:0.20}, // thumb up
+    {x:0.48, y:0.62}, {x:0.52, y:0.65}, {x:0.54, y:0.70}, {x:0.52, y:0.73}, // index curled
+    {x:0.53, y:0.63}, {x:0.57, y:0.66}, {x:0.59, y:0.71}, {x:0.57, y:0.74}, // middle curled
+    {x:0.58, y:0.65}, {x:0.62, y:0.68}, {x:0.64, y:0.72}, {x:0.62, y:0.75}, // ring curled
+    {x:0.63, y:0.68}, {x:0.66, y:0.70}, {x:0.68, y:0.73}, {x:0.66, y:0.76}  // pinky curled
+  ],
+  FIST: [
+    {x:0.5, y:0.85},
+    {x:0.44, y:0.72}, {x:0.40, y:0.62}, {x:0.44, y:0.56}, {x:0.50, y:0.56}, // thumb across
+    {x:0.46, y:0.62}, {x:0.46, y:0.52}, {x:0.50, y:0.58}, {x:0.48, y:0.66}, // index curled
+    {x:0.51, y:0.62}, {x:0.51, y:0.52}, {x:0.55, y:0.58}, {x:0.53, y:0.66}, // middle curled
+    {x:0.56, y:0.63}, {x:0.56, y:0.54}, {x:0.60, y:0.60}, {x:0.58, y:0.68}, // ring curled
+    {x:0.61, y:0.66}, {x:0.61, y:0.58}, {x:0.64, y:0.63}, {x:0.63, y:0.70}  // pinky curled
+  ],
+  POINT: [
+    {x:0.5, y:0.85},
+    {x:0.45, y:0.72}, {x:0.42, y:0.62}, {x:0.46, y:0.58}, {x:0.52, y:0.58}, // thumb across
+    {x:0.46, y:0.55}, {x:0.44, y:0.42}, {x:0.42, y:0.30}, {x:0.40, y:0.18}, // index pointing UP
+    {x:0.52, y:0.62}, {x:0.54, y:0.55}, {x:0.56, y:0.62}, {x:0.54, y:0.68}, // middle curled
+    {x:0.57, y:0.64}, {x:0.59, y:0.57}, {x:0.61, y:0.64}, {x:0.59, y:0.70}, // ring curled
+    {x:0.62, y:0.67}, {x:0.64, y:0.61}, {x:0.65, y:0.66}, {x:0.63, y:0.72}  // pinky curled
+  ],
+  TWO_FINGERS: [
+    {x:0.5, y:0.85},
+    {x:0.45, y:0.72}, {x:0.42, y:0.62}, {x:0.47, y:0.58}, {x:0.53, y:0.58}, // thumb across
+    {x:0.46, y:0.55}, {x:0.44, y:0.40}, {x:0.42, y:0.28}, {x:0.40, y:0.16}, // index pointing left-up
+    {x:0.52, y:0.53}, {x:0.54, y:0.38}, {x:0.56, y:0.26}, {x:0.58, y:0.16}, // middle pointing right-up
+    {x:0.58, y:0.64}, {x:0.60, y:0.57}, {x:0.62, y:0.64}, {x:0.60, y:0.70}, // ring curled
+    {x:0.63, y:0.67}, {x:0.65, y:0.61}, {x:0.66, y:0.66}, {x:0.64, y:0.72}  // pinky curled
+  ]
+};
+
+/**
+ * Compares live hand landmarks against target gesture and returns normalized score and match boolean
  */
 export function matchTargetGesture(liveLandmarks, targetSign, skeletonTemplate) {
   if (!liveLandmarks || liveLandmarks.length < 21) {
@@ -163,53 +231,54 @@ export function matchTargetGesture(liveLandmarks, targetSign, skeletonTemplate) 
   }
 
   const detected = classifyGesture(liveLandmarks);
+  const targetKey = (targetSign || '').toUpperCase();
+  const detectedKey = (detected.sign || '').toUpperCase();
 
-  // Exact sign match
-  const isSignDirectMatch = (
-    detected.sign === targetSign ||
-    (targetSign === 'ASL_A' && (detected.sign === 'FIST' || detected.sign === 'ASL_A')) ||
-    (targetSign === 'ASL_B' && (detected.sign === 'OPEN_HAND' || detected.sign === 'ASL_B')) ||
-    (targetSign === 'ASL_V' && (detected.sign === 'TWO_FINGERS' || detected.sign === 'ASL_V')) ||
-    (targetSign === 'MEDITATION_MUDRA' && (detected.sign === 'ASL_F' || detected.sign === 'PINCH')) ||
-    (targetSign === 'WALKING_FINGERS' && (detected.sign === 'ASL_V' || detected.sign === 'POINT')) ||
-    (targetSign === 'WRITING_SIGN' && (detected.sign === 'PINCH' || detected.sign === 'ASL_A'))
-  );
+  // 1. Check direct match or alias overlap
+  const targetAliases = GESTURE_ALIASES[targetKey] || [targetKey];
+  const detectedAliases = GESTURE_ALIASES[detectedKey] || [detectedKey];
 
-  // Structural landmark distance calculation
+  const hasAliasOverlap = targetAliases.some(a => detectedAliases.includes(a)) ||
+                          targetAliases.includes(detectedKey) ||
+                          detectedAliases.includes(targetKey);
+
+  // 2. Structural landmark distance calculation against template
+  const tmpl = skeletonTemplate || TARGET_SKELETON_TEMPLATES[targetKey];
   let templateSimilarity = 0.5;
-  if (skeletonTemplate && skeletonTemplate.length === 21) {
+
+  if (tmpl && tmpl.length === 21) {
     let totalError = 0;
-    // Normalize live hand around wrist
     const liveWrist = liveLandmarks[0];
-    const tmplWrist = skeletonTemplate[0];
+    const tmplWrist = tmpl[0];
 
     const liveScale = dist(liveLandmarks[0], liveLandmarks[9]) || 0.2;
-    const tmplScale = dist(skeletonTemplate[0], skeletonTemplate[9]) || 0.2;
+    const tmplScale = dist(tmpl[0], tmpl[9]) || 0.2;
 
     for (let i = 0; i < 21; i++) {
+      // Mirror X if needed
       const lx = (liveLandmarks[i].x - liveWrist.x) / liveScale;
       const ly = (liveLandmarks[i].y - liveWrist.y) / liveScale;
-      const tx = (skeletonTemplate[i].x - tmplWrist.x) / tmplScale;
-      const ty = (skeletonTemplate[i].y - tmplWrist.y) / tmplScale;
+      const tx = (tmpl[i].x - tmplWrist.x) / tmplScale;
+      const ty = (tmpl[i].y - tmplWrist.y) / tmplScale;
       totalError += Math.hypot(lx - tx, ly - ty);
     }
     const avgError = totalError / 21;
-    templateSimilarity = Math.max(0, Math.min(1, 1.0 - (avgError / 1.6)));
+    templateSimilarity = Math.max(0.2, Math.min(1.0, 1.0 - (avgError / 2.2)));
   }
 
-  // Combined score
+  // 3. Combined score calculation
   let score = 0;
-  if (isSignDirectMatch) {
-    score = Math.max(0.85, 0.5 * detected.confidence + 0.5 * templateSimilarity);
+  if (hasAliasOverlap) {
+    score = Math.max(0.85, 0.45 * (detected.confidence || 0.9) + 0.55 * templateSimilarity);
   } else {
-    score = Math.min(0.78, 0.4 * detected.confidence + 0.6 * templateSimilarity);
+    score = Math.min(0.75, 0.3 * (detected.confidence || 0.5) + 0.7 * templateSimilarity);
   }
 
-  const isMatched = score >= 0.82;
+  const isMatched = score >= 0.65 || hasAliasOverlap;
 
-  let feedback = 'Align your hand with the dotted line';
-  if (score > 0.65 && !isMatched) {
-    feedback = 'Getting close! Hold position steadily...';
+  let feedback = 'Align your hand with the dotted guide';
+  if (score >= 0.55 && !isMatched) {
+    feedback = 'Getting closer! Hold steady...';
   } else if (isMatched) {
     feedback = 'Perfect Match! ✔️ Keep holding...';
   }
@@ -219,7 +288,8 @@ export function matchTargetGesture(liveLandmarks, targetSign, skeletonTemplate) 
     score: Math.round(score * 100),
     feedback,
     detectedSign: detected.sign,
-    detectedText: detected.text
+    detectedText: detected.text,
+    detectedEmoji: detected.emoji
   };
 }
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, Volume2, Type, Mic, Eye, Globe, Sparkles } from 'lucide-react';
 import { translateApi } from '../services/api';
+import LiveSignInput from './LiveSignInput';
 
 const TABS = [
   { id: 'TEXT',   label: 'TEXT',   icon: Type },
@@ -98,20 +99,32 @@ export default function Translator() {
               </span>
             </div>
 
-            <textarea
-              rows={5}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              placeholder="e.g. Hello, Yes, Stop, Water, Help, Doctor, Thank You, I Love You..."
-              className="w-full p-4 rounded-2xl text-sm font-medium resize-none focus:outline-none transition-all placeholder-slate-600"
-              style={{
-                background: 'rgba(255,255,255,0.04)',
-                border: '1px solid rgba(255,255,255,0.09)',
-                color: '#fff',
-              }}
-              onFocus={e => { e.currentTarget.style.borderColor = '#00e5ff'; e.currentTarget.style.boxShadow = '0 0 16px rgba(0,229,255,0.2)'; }}
-              onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; e.currentTarget.style.boxShadow = 'none'; }}
-            />
+            {mode === 'SIGN' ? (
+              <div className="w-full h-48 md:h-56 rounded-2xl overflow-hidden border border-white/10 relative shadow-inner">
+                <LiveSignInput onGestureStabilized={(gesture) => {
+                  setInput(prev => {
+                    const current = prev.trim();
+                    if (current === 'Hello' || current === '') return gesture;
+                    return current + ' ' + gesture;
+                  });
+                }} />
+              </div>
+            ) : (
+              <textarea
+                rows={5}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                placeholder="e.g. Hello, Yes, Stop, Water, Help, Doctor, Thank You, I Love You..."
+                className="w-full p-4 rounded-2xl text-sm font-medium resize-none focus:outline-none transition-all placeholder-slate-600"
+                style={{
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.09)',
+                  color: '#fff',
+                }}
+                onFocus={e => { e.currentTarget.style.borderColor = '#00e5ff'; e.currentTarget.style.boxShadow = '0 0 16px rgba(0,229,255,0.2)'; }}
+                onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.09)'; e.currentTarget.style.boxShadow = 'none'; }}
+              />
+            )}
 
             <div className="flex flex-wrap gap-1.5">
               {['Hello', 'Water', 'Thank You', 'Help', 'Doctor', 'Yes', 'I Love You'].map(quick => (

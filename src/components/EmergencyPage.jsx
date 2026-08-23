@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const API_BASE = 'http://localhost:5001';
+import { broadcastEmergencyApi } from '../services/api';
 
 const ALERTS = [
   { id: 'help',     label: '🚨 I NEED HELP',      cls: 'red',    speech: 'I need immediate help!',             desc: 'Dispatches to first responders & security' },
@@ -40,17 +40,12 @@ export default function EmergencyPage() {
     setStatus('DISPATCHING');
 
     try {
-      const res = await fetch(`${API_BASE}/api/emergency/broadcast`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          alertId: selected.id,
-          label: selected.label,
-          speech: selected.speech,
-        }),
+      const json = await broadcastEmergencyApi({
+        alertId: selected.id,
+        label: selected.label,
+        speech: selected.speech,
       });
-      const json = await res.json();
-      const bid = json.broadcastId || `sos_${Date.now()}`;
+      const bid = (json && json.broadcastId) || `sos_${Date.now()}`;
       setBroadcastId(bid);
       setStatus('DISPATCHED');
       setLog(l => [

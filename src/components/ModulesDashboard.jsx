@@ -1,15 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useMicrophone } from '../utils/useMediaPermissions';
+import GestureSkeletonThumbnail from './GestureSkeletonThumbnail';
 
 const API_BASE = 'http://localhost:5001';
 
 const LESSONS = [
-  { tag: 'Lesson 1/5', title: '👋 Open Hand', desc: 'HELLO/Wave greeting usage in sign language context.', thumb: '👋' },
-  { tag: 'Lesson 2/5', title: '👍 Thumbs Up', desc: 'YES/Affirmative usage in sign language context.', thumb: '✋' },
-  { tag: 'Lesson 3/5', title: '✊ Fist', desc: 'STOP/Wait usage in sign language context.', thumb: '✊' },
-  { tag: 'Lesson 4/5', title: '👉 Point', desc: 'THERE/Directional usage in sign language context.', thumb: '👉' },
-  { tag: 'Lesson 5/5', title: '✌️ Peace / Two', desc: 'PEACE/Number 2 usage in sign language context.', thumb: '✌️' },
+  { tag: 'Lesson 1/5', sign: 'OPEN_HAND', title: '👋 Open Hand', desc: 'HELLO/Wave greeting usage in sign language context.', thumb: '👋' },
+  { tag: 'Lesson 2/5', sign: 'THUMBS_UP', title: '👍 Thumbs Up', desc: 'YES/Affirmative usage in sign language context.', thumb: '✋' },
+  { tag: 'Lesson 3/5', sign: 'FIST', title: '✊ Fist', desc: 'STOP/Wait usage in sign language context.', thumb: '✊' },
+  { tag: 'Lesson 4/5', sign: 'POINT', title: '👉 Point', desc: 'THERE/Directional usage in sign language context.', thumb: '👉' },
+  { tag: 'Lesson 5/5', sign: 'TWO_FINGERS', title: '✌️ Peace / Two', desc: 'PEACE/Number 2 usage in sign language context.', thumb: '✌️' },
 ];
 
 const ALERTS = [
@@ -221,14 +222,22 @@ export default function ModulesDashboard() {
                 display: 'inline-block', fontWeight: 600, marginTop: '1rem',
               }}>Correct! 🎉</div>
 
-              {/* Hand Thumb */}
+              {/* Visual 2D Line & Dot Skeleton + Glyph Thumb */}
               <div style={{
                 position: 'absolute', bottom: 10, right: 10,
-                width: 70, height: 70,
-                border: '1px solid #8a99ad', borderRadius: 8,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: '#000', fontSize: 28,
-              }}>{lesson.thumb}</div>
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: 'rgba(0,0,0,0.6)',
+                border: '1px solid rgba(0,242,254,0.3)', borderRadius: 10,
+                padding: '4px 6px',
+              }}>
+                <GestureSkeletonThumbnail sign={lesson.sign} size={50} strokeColor="#00f2fe" dotColor="#9d50bb" />
+                <div style={{
+                  width: 40, height: 40,
+                  border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: '#000', fontSize: 20,
+                }}>{lesson.thumb}</div>
+              </div>
             </div>
 
             <button

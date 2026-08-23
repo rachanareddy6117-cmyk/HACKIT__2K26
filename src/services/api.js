@@ -4,11 +4,11 @@
  * and python microservice on port 8000.
  */
 
-let activeApiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
-const INFERENCE_BASE = import.meta.env.VITE_INFERENCE_URL || 'http://localhost:8000';
+let activeApiBase = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '' : 'http://localhost:5001');
+const INFERENCE_BASE = import.meta.env.VITE_INFERENCE_URL || (import.meta.env.PROD ? '' : 'http://localhost:8000');
 
 async function post(path, body, customBase) {
-  const candidateBases = customBase ? [customBase] : [activeApiBase, 'http://localhost:5002', 'http://localhost:5001', 'http://localhost:5000'];
+  const candidateBases = customBase ? [customBase] : [activeApiBase, import.meta.env.PROD ? '' : 'http://localhost:5001'];
   for (const base of candidateBases) {
     try {
       const res = await fetch(`${base}${path}`, {
@@ -28,7 +28,7 @@ async function post(path, body, customBase) {
 }
 
 async function get(path, customBase) {
-  const candidateBases = customBase ? [customBase] : [activeApiBase, 'http://localhost:5002', 'http://localhost:5001', 'http://localhost:5000'];
+  const candidateBases = customBase ? [customBase] : [activeApiBase, import.meta.env.PROD ? '' : 'http://localhost:5001'];
   for (const base of candidateBases) {
     try {
       const res = await fetch(`${base}${path}`);
