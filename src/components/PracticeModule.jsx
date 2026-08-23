@@ -4,6 +4,7 @@ import { getRoadmapByCategory } from '../utils/roadmapData';
 import CameraView from './CameraView';
 import HandTracker from './HandTracker';
 import SignIllustration from './SignIllustration';
+import VideoModal from './VideoModal';
 
 export default function PracticeModule({ category = 'deaf_mute' }) {
   const [levelIdx, setLevelIdx] = useState(0);
@@ -11,6 +12,7 @@ export default function PracticeModule({ category = 'deaf_mute' }) {
   const [isMatched, setIsMatched] = useState(false);
   const [countdown, setCountdown] = useState(null);
   const [activeCategory, setActiveCategory] = useState(category);
+  const [showVideo, setShowVideo] = useState(false);
 
   const cameraRef = useRef(null);
   const timerRef = useRef(null);
@@ -93,6 +95,15 @@ export default function PracticeModule({ category = 'deaf_mute' }) {
             }}
           >
             🧩 Autism
+          </button>
+          <button
+            onClick={() => setShowVideo(true)}
+            style={{
+              padding: '4px 8px', borderRadius: 7, border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+              background: 'linear-gradient(135deg, #00f2fe, #9d50bb)', color: '#fff', marginLeft: 4
+            }}
+          >
+            ▶ How It Works
           </button>
         </div>
       </div>
@@ -227,6 +238,7 @@ export default function PracticeModule({ category = 'deaf_mute' }) {
           </div>
         )}
       </div>
+      {showVideo && <VideoModal onClose={() => setShowVideo(false)} />}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import DeafDumbGridModule from './DeafDumbGridModule';
 import AutismSupportModule from './AutismSupportModule';
 import SignIllustration from './SignIllustration';
 import { sendChatMessage } from '../services/api';
+import VideoModal from './VideoModal';
 
 export default function LiveWorkspaceView({
   user,
@@ -35,6 +36,7 @@ export default function LiveWorkspaceView({
   const [aiTyping, setAiTyping] = useState(false);
   const [targetIndex, setTargetIndex] = useState(0);
   const [matchFeedback, setMatchFeedback] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
   const targetSigns = ['HELLO', 'THANK YOU', 'HELP', 'YES'];
 
   const cameraRef = useRef(null);
@@ -166,6 +168,22 @@ export default function LiveWorkspaceView({
               📐 3-Column Modules
             </button>
           )}
+
+          <button
+            onClick={() => setShowVideo(true)}
+            style={{
+              background: 'linear-gradient(135deg, #00f2fe, #9d50bb)',
+              border: 'none',
+              borderRadius: 20,
+              padding: '4px 12px',
+              fontSize: '0.8rem',
+              color: '#fff',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+            }}
+          >
+            ▶ How It Works
+          </button>
 
           <div
             onClick={onChangePersona}
@@ -577,6 +595,7 @@ export default function LiveWorkspaceView({
           </form>
         </div>
       </div>
+      {showVideo && <VideoModal onClose={() => setShowVideo(false)} />}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 import { ArrowRight, Volume2, Type, Mic, Eye, Globe, Sparkles, Upload, Loader2 } from 'lucide-react';
 import { detectSignFromBatch, glossToText, translateApi } from '../services/api';
 import LiveSignInput from './LiveSignInput';
+import VideoModal from './VideoModal';
 
 const TABS = [
   { id: 'TEXT',   label: 'TEXT',   icon: Type },
@@ -21,6 +22,7 @@ export default function Translator() {
   const [videoFile, setVideoFile] = useState(null);
   const [videoLoading, setVideoLoading] = useState(false);
   const [videoStatus, setVideoStatus] = useState('');
+  const [showVideoModal, setShowVideoModal] = useState(false);
   const videoRef = useRef(null);
 
   const translate = async (e) => {
@@ -108,6 +110,22 @@ export default function Translator() {
         <p className="text-xs mt-1 text-slate-400">
           Translate seamlessly between speech audio, text phrases, and sign language glosses with real-time speech synthesis.
         </p>
+        <button
+          onClick={() => setShowVideoModal(true)}
+          style={{
+            background: 'linear-gradient(135deg, #00f2fe, #9d50bb)',
+            border: 'none',
+            borderRadius: 20,
+            padding: '4px 12px',
+            fontSize: '0.8rem',
+            color: '#fff',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+            marginTop: '8px'
+          }}
+        >
+          ▶ How It Works
+        </button>
       </div>
 
       {/* Mode tabs */}
@@ -271,6 +289,7 @@ export default function Translator() {
           )}
         </div>
       </div>
+      {showVideoModal && <VideoModal onClose={() => setShowVideoModal(false)} />}
     </div>
   );
 }
