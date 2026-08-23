@@ -23,6 +23,8 @@ const NAV_ITEMS = [
   { id: 'suite',        label: '3-Column Suite',   icon: LayoutGrid },
   { id: 'workspace',    label: 'Live Workspace',   icon: MonitorPlay },
   { id: 'practice',     label: 'Practice (20 Lvl)', icon: Award },
+  { id: 'deaf_hoh',     label: 'Deaf / Hard of Hearing', icon: Users },
+  { id: 'non_verbal',   label: 'Non-verbal / Dumb', icon: MessageSquare },
   { id: 'autism',       label: 'Autism & AAC',     icon: Heart },
   { id: 'peer_connect', label: 'Peer Connect & Call', icon: Users },
   { id: 'conversation', label: 'Conversation',     icon: MessageSquare },
@@ -33,6 +35,7 @@ const NAV_ITEMS = [
 export default function Dashboard({ user, persona, onLogout, onChangePersona }) {
   const [activeTab,       setActiveTab]       = useState('suite');
   const [mobileMenuOpen,  setMobileMenuOpen]  = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [backendHealth,   setBackendHealth]   = useState({ status: 'checking', message: 'Connecting to API...' });
   const [liveGlosses,     setLiveGlosses]     = useState([]);
   const cameraRef = useRef(null);
@@ -78,82 +81,28 @@ export default function Dashboard({ user, persona, onLogout, onChangePersona }) 
       className="min-h-screen flex flex-col"
       style={{ background: '#0B0E14', color: '#fff' }}
     >
-      {/* ── Top Header ── */}
-      <header
-        className="sticky top-0 z-40 px-5 py-3 flex items-center justify-between"
-        style={{
-          background: 'rgba(5,7,10,0.92)',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-        }}
-      >
-        <div className="flex items-center gap-4">
-          <Logo size="small" />
-          {persona && (
-            <button
-              onClick={onChangePersona}
-              className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer"
-              style={{
-                background: 'rgba(0,242,254,0.08)',
-                border: '1px solid rgba(0,242,254,0.25)',
-                color: '#00F2FE',
-              }}
-            >
-              <span>{persona.icon || '🤟'}</span>
-              <span>{persona.title || 'Deaf / Non-Speaking'}</span>
-            </button>
-          )}
-
-          {/* Backend Status Pill */}
-          <div
-            className="hidden lg:flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono"
-            style={{
-              background: backendHealth.status === 'connected' ? 'rgba(34,197,94,0.1)' : 'rgba(0,242,254,0.1)',
-              border: backendHealth.status === 'connected' ? '1px solid rgba(34,197,94,0.3)' : '1px solid rgba(0,242,254,0.25)',
-              color: backendHealth.status === 'connected' ? '#4ade80' : '#00F2FE'
-            }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ background: backendHealth.status === 'connected' ? '#22c55e' : '#00F2FE' }} />
-            <span>API {backendHealth.status === 'connected' ? `Online (:5002)` : 'Active (:5002)'}</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold"
-            style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: '#94A3B8' }}
-          >
-            <User className="w-4 h-4" style={{ color: '#9D50BB' }} />
-            <span>{user?.name || user?.email || 'Rachana Reddy'}</span>
-          </div>
-
-          <button
-            onClick={handleLogout}
-            className="p-2 rounded-xl transition-all cursor-pointer"
-            style={{ color: '#94A3B8' }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.background = 'rgba(239,68,68,0.08)'; }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#94A3B8'; e.currentTarget.style.background = 'transparent'; }}
-            title="Logout"
-          >
-            <LogOut className="w-5 h-5" />
-          </button>
-
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-xl cursor-pointer"
-            style={{ color: '#94A3B8', background: 'rgba(255,255,255,0.04)' }}
-          >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
-        </div>
-      </header>
-
       {/* ── Main Layout ── */}
       <div className="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-5">
 
         {/* Sidebar */}
-        <aside className={`md:col-span-2 space-y-3 ${mobileMenuOpen ? 'block' : 'hidden md:block'}`}>
+        <aside className={`${sidebarCollapsed ? 'md:col-span-1' : 'md:col-span-2'} space-y-3 ${mobileMenuOpen ? 'block' : 'hidden md:block'}`}>
+          <div className="flex items-center justify-between gap-2">
+            {!sidebarCollapsed && <Logo size="small" />}
+            <button
+              onClick={() => setSidebarCollapsed(value => !value)}
+              className="p-2 rounded-xl cursor-pointer"
+              style={{ color: '#94A3B8', background: 'rgba(255,255,255,0.04)' }}
+              title={sidebarCollapsed ? 'Expand navigation' : 'Collapse navigation'}
+            >
+              {sidebarCollapsed ? <Menu className="w-4 h-4" /> : <X className="w-4 h-4" />}
+            </button>
+          </div>
+          {!sidebarCollapsed && (
+            <div className="flex items-center justify-between px-2 text-xs" style={{ color: '#94A3B8' }}>
+              <span className="truncate">{user?.name || user?.email || 'EchoSign User'}</span>
+              <button onClick={handleLogout} className="p-1 cursor-pointer" title="Logout"><LogOut className="w-4 h-4" /></button>
+            </div>
+          )}
           <nav
             className="p-2 rounded-2xl space-y-1"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(20px)' }}
@@ -177,14 +126,14 @@ export default function Dashboard({ user, persona, onLogout, onChangePersona }) 
                   }}
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />
-                  <span>{label}</span>
+                  {!sidebarCollapsed && <span>{label}</span>}
                 </button>
               );
             })}
           </nav>
 
           {/* Persona Info Card */}
-          <div
+          {!sidebarCollapsed && <div
             className="p-4 rounded-2xl text-xs space-y-2"
             style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}
           >
@@ -199,10 +148,10 @@ export default function Dashboard({ user, persona, onLogout, onChangePersona }) 
             >
               Switch Persona →
             </button>
-          </div>
+          </div>}
 
           {/* System Diagnostics Box */}
-          <div
+          {!sidebarCollapsed && <div
             className="p-3.5 rounded-2xl text-[10px] space-y-1.5 font-mono"
             style={{ background: 'rgba(0,242,254,0.02)', border: '1px solid rgba(0,242,254,0.1)', color: '#94A3B8' }}
           >
@@ -213,7 +162,7 @@ export default function Dashboard({ user, persona, onLogout, onChangePersona }) 
             <div>• Express Server: <span className="text-green-400">Port 5002</span></div>
             <div>• Dual AI Models: <span className="text-cyan-400">Active</span></div>
             <div>• Privacy Firewall: <span className="text-purple-400">AES-256</span></div>
-          </div>
+          </div>}
         </aside>
 
         {/* Main Content Area */}
@@ -299,7 +248,7 @@ export default function Dashboard({ user, persona, onLogout, onChangePersona }) 
           )}
 
           {/* ── VIEW: 20-LEVEL PRACTICE STUDIO (MATCHING PDF GUIDES & DOTTED SKELETON) ── */}
-          {activeTab === 'practice' && (
+          {(activeTab === 'practice' || activeTab === 'deaf_hoh' || activeTab === 'non_verbal') && (
             <Practice
               initialCategory={persona?.id || 'deaf_mute'}
               user={user}

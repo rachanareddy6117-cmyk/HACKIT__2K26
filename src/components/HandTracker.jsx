@@ -3,6 +3,7 @@ import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 import { classifyGesture, matchTargetGesture, GESTURE_MAP } from '../utils/signClassifier';
 import { CheckCircle2, Volume2, Sparkles, Timer, Eye } from 'lucide-react';
 import SignIllustration from './SignIllustration';
+import * as api from '../services/api';
 
 export default function HandTracker({
   videoElement,
@@ -17,6 +18,7 @@ export default function HandTracker({
   const animFrameRef = useRef(null);
   const matchStartTime = useRef(null);
   const countdownIntervalRef = useRef(null);
+  const lastDetectionTime = useRef(0);
 
   const [aiStatus, setAiStatus] = useState('loading');
   const [handCount, setHandCount] = useState(0);
@@ -31,6 +33,35 @@ export default function HandTracker({
   const secondaryColor = isDeafTheme ? '#1E40AF' : '#C2410C';
   const accentGlow = isDeafTheme ? 'rgba(37,99,235,0.4)' : 'rgba(234,88,12,0.4)';
 
+  /**
+   * Call the backend API to get real sign inference
+   * Falls back to local classification if API unavailable
+   */
+  const detectSignViaAPI = useCallback(async (handLandmarks) => {
+    try {
+      const response = await api.detectSignFromLandmarks(handLandmarks, 0.65);
+
+      if (response && response.success) {
+        return {
+          sign: response.gloss || 'UNKNOWN',
+          confidence: response.confidence || 0,
+          text: response.speech || response.gloss || 'Unknown',
+          emoji: response.emoji || '✋',
+          source: 'api'
+        };
+      }
+    } catch (err) {
+      // Silently fall back to local classification if API fails
+      console.debug('Sign detection API error, using local classification', err.message);
+    }
+
+    // Fallback to local classification
+    return {
+      ...classifyGesture(handLandmarks),
+      source: 'local'
+    };
+  }, []);
+
   /* ── Init MediaPipe ONCE ── */
   useEffect(() => {
     let mounted = true;
@@ -39,7 +70,7 @@ export default function HandTracker({
       try {
         setAiStatus('loading');
         const vision = await FilesetResolver.forVisionTasks(
-          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm'
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/wasm'
         );
         const lm = await HandLandmarker.createFromOptions(vision, {
           baseOptions: {
@@ -114,7 +145,9 @@ export default function HandTracker({
   useEffect(() => {
     if (aiStatus !== 'ready' || !isCameraActive || !videoElement) return;
 
-    const detect = () => {
+    const DETECTION_THROTTLE_MS = 300; // Call API at most every 300ms to avoid overwhelming backend
+
+    const detect = async () => {
       if (
         videoElement &&
         videoElement.readyState >= 2 &&
@@ -146,8 +179,30 @@ export default function HandTracker({
               // Draw live tracked hand skeleton
               drawLiveHandSkeleton(ctx, liveLm, w, h, isMatched);
 
-              const cls = classifyGesture(liveLm);
-              const g = { ...cls, meta: GESTURE_MAP[cls.sign] || GESTURE_MAP.UNKNOWN };
+              // Throttle API calls to avoid overwhelming backend
+              const now = Date.now();
+              let g;
+              if (now - lastDetectionTime.current >= DETECTION_THROTTLE_MS) {
+                lastDetectionTime.current = now;
+                // Call API for inference
+                const apiResult = await detectSignViaAPI(liveLm);
+                g = { 
+                  sign: apiResult.sign, 
+                  confidence: apiResult.confidence, 
+                  text: apiResult.text,
+                  emoji: apiResult.emoji,
+                  source: apiResult.source
+                };
+              } else {
+                // Use local classification for throttled frames
+                const cls = classifyGesture(liveLm);
+                g = cls;
+              }
+
+              // Enrich with gesture map
+              const meta = GESTURE_MAP[g.sign] || GESTURE_MAP.UNKNOWN;
+              g.meta = meta;
+              
               setCurrentGesture(g);
               onGestureDetected?.(g);
 
@@ -188,7 +243,7 @@ export default function HandTracker({
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
     };
-  }, [aiStatus, isCameraActive, videoElement, targetModule, isMatched, isDeafTheme, onGestureDetected, triggerMatchConfirmed]);
+  }, [aiStatus, isCameraActive, videoElement, targetModule, isMatched, isDeafTheme, onGestureDetected, triggerMatchConfirmed, detectSignViaAPI]);
 
   /* ── Draw Target DOTTED Skeleton (Reference Guide) ── */
   function drawDottedTargetSkeleton(ctx, tmpl, w, h, isDeaf) {

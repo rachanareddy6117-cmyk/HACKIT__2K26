@@ -14,11 +14,18 @@ import EmailAuth        from './components/EmailAuth';
 import FaceAuth         from './components/FaceAuth';
 import VoiceAuth        from './components/VoiceAuth';
 import PersonaSelection from './components/PersonaSelection';
+<<<<<<< HEAD
 import Dashboard        from './components/Dashboard';
 import DeafDumbGridModule   from './components/DeafDumbGridModule';
 import AutismSupportModule  from './components/AutismSupportModule';
 import PeerConnectModule    from './components/PeerConnectModule';
 
+=======
+import Dashboard from './components/Dashboard';
+import ModulesView from './components/ModulesView';
+import LiveWorkspaceView from './components/LiveWorkspaceView';
+import PeerConnectModule from './components/PeerConnectModule';
+>>>>>>> 4cad1b9d54f79e0e34fb77904855afd48c9132a6
 import { getStoredItem, STORAGE_KEYS } from './utils/storage';
 
 // ─── Global Top Navigation ──────────────────────────────────────────────────
@@ -147,6 +154,7 @@ function AppShell() {
   }, [location.pathname]);
 
   return (
+<<<<<<< HEAD
     <div style={{ minHeight: '100vh', background: '#07090e', color: '#fff', fontFamily: "'Segoe UI',-apple-system,sans-serif" }}>
       <GlobalNav user={user} onAccount={handleAccount} />
 
@@ -176,6 +184,45 @@ function AppShell() {
       {overlay === 'auth_select' && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}>
           <Auth mode={authMode} onSelectMethod={(m) => setOverlay(`${m}_auth`)} onBack={() => setOverlay(null)} />
+=======
+    <div style={{ minHeight: '100vh', background: '#07090e', color: '#ffffff', fontFamily: "'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif" }}>
+      {/* Legacy global navigation is intentionally removed; Dashboard owns navigation. */}
+      {false && <div style={{
+        background: 'rgba(5, 7, 10, 0.95)',
+        borderBottom: '1px solid rgba(0, 242, 254, 0.18)',
+        backdropFilter: 'blur(20px)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        padding: '8px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: 10
+      }}>
+        {/* Brand */}
+        <div
+          onClick={() => setScreen('landing')}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
+        >
+          <div style={{
+            width: 26,
+            height: 26,
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #00f2fe, #9d50bb)',
+            boxShadow: '0 0 10px #00f2fe',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 13
+          }}>
+            ⚡
+          </div>
+          <span style={{ fontWeight: 900, fontSize: 16, letterSpacing: '-0.02em', color: '#fff' }}>
+            Echo<span style={{ color: '#00f2fe' }}>Sign</span>
+          </span>
+>>>>>>> 4cad1b9d54f79e0e34fb77904855afd48c9132a6
         </div>
       )}
       {overlay === 'email_auth' && (
@@ -187,6 +234,36 @@ function AppShell() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}>
           <FaceAuth onComplete={handleAuthSuccess} onBack={() => setOverlay('auth_select')} />
         </div>
+<<<<<<< HEAD
+=======
+      </div>}
+
+      {/* ── SCREEN RENDERING ── */}
+      {screen === 'landing' && (
+        <Landing
+          onGetStarted={() => {
+            if (!user) setUser({ id: 'demo_user', name: 'Rachana Reddy', email: 'rachana@echosign.org' });
+            if (!selectedPersona) setSelectedPersona({ id: 'deaf_mute', title: 'Deaf / Non-Speaking', icon: '🤟' });
+            setScreen('modules_suite');
+          }}
+          onLogin={() => handleStartAuth('login')}
+          onSeeHowItWorks={() => {
+            if (!user) setUser({ id: 'demo_user', name: 'Rachana Reddy', email: 'demo@echosign.org' });
+            if (!selectedPersona) setSelectedPersona({ id: 'deaf_mute', title: 'Deaf / Non-Speaking', icon: '🤟' });
+            setScreen('live_workspace');
+          }}
+          onOpenModules={() => {
+            if (!user) setUser({ id: 'demo_user', name: 'Rachana Reddy', email: 'demo@echosign.org' });
+            if (!selectedPersona) setSelectedPersona({ id: 'deaf_mute', title: 'Deaf / Non-Speaking', icon: '🤟' });
+            setScreen('modules_suite');
+          }}
+          onOpenWorkspace={() => {
+            if (!user) setUser({ id: 'demo_user', name: 'Rachana Reddy', email: 'demo@echosign.org' });
+            if (!selectedPersona) setSelectedPersona({ id: 'deaf_mute', title: 'Deaf / Non-Speaking', icon: '🤟' });
+            setScreen('live_workspace');
+          }}
+        />
+>>>>>>> 4cad1b9d54f79e0e34fb77904855afd48c9132a6
       )}
       {overlay === 'voice_auth' && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}>

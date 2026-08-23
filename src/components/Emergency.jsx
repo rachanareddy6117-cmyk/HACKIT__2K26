@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Volume2, ShieldAlert, Radio, AlertTriangle } from 'lucide-react';
+import { Volume2, ShieldAlert, Radio, AlertTriangle, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { broadcastEmergencyApi } from '../services/api';
 
 const ACTIONS = [
@@ -13,9 +13,10 @@ const ACTIONS = [
 
 export default function Emergency() {
   const [alert, setAlert] = useState(null);
+  const [complaint, setComplaint] = useState(null);
 
   const trigger = (action) => {
-    setAlert(action);
+    setAlert({ ...action, createdAt: new Date().toISOString(), assignedOfficer: 'Officer Priya Sharma' });
     window.speechSynthesis?.cancel();
     window.speechSynthesis?.speak(new SpeechSynthesisUtterance(action.speech));
     broadcastEmergencyApi({
@@ -25,6 +26,27 @@ export default function Emergency() {
       location: 'User Geolocation Coordinates: Active'
     }).catch(() => {});
   };
+
+  if (complaint) {
+    return (
+      <div className="space-y-6 max-w-5xl mx-auto">
+        <button onClick={() => setComplaint(null)} className="flex items-center gap-2 text-xs font-bold text-slate-300 cursor-pointer">
+          <ArrowLeft className="w-4 h-4" /> Back to Emergency Dispatch
+        </button>
+        <div className="p-8 rounded-3xl space-y-5" style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.4)' }}>
+          <div className="flex items-center gap-3 text-emerald-400 font-black"><CheckCircle2 /> Alert received and assigned</div>
+          <h1 className="text-3xl font-black text-white">Complaint Overview</h1>
+          <div className="grid gap-3 text-sm text-slate-300">
+            <div>Disaster type: <strong className="text-white">{complaint.label}</strong></div>
+            <div>Details: <strong className="text-white">{complaint.speech}</strong></div>
+            <div>Location: User Geolocation Coordinates: Active</div>
+            <div>Assigned officer: <strong className="text-cyan-300">{complaint.assignedOfficer}</strong></div>
+            <div>Status: <strong className="text-amber-300">Broadcasting to responders</strong></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -80,6 +102,9 @@ export default function Emergency() {
       {/* Active Broadcast Banner */}
       {alert && (
         <div
+            onClick={() => setComplaint(alert)}
+            role="button"
+            tabIndex={0}
           className="p-7 rounded-3xl text-center space-y-4 animate-fade-in-up"
           style={{
             background: 'rgba(239,68,68,0.08)',
@@ -109,8 +134,8 @@ export default function Emergency() {
             "{alert.speech}"
           </div>
 
-          <button
-            onClick={() => setAlert(null)}
+            <button
+              onClick={(event) => { event.stopPropagation(); setAlert(null); }}
             className="px-8 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer"
             style={{
               background: 'rgba(255,255,255,0.08)',
@@ -122,6 +147,7 @@ export default function Emergency() {
           >
             Dismiss Alert
           </button>
+            <div className="text-[10px] font-bold text-cyan-300">Open notification for Complaint Overview</div>
         </div>
       )}
     </div>

@@ -12,7 +12,11 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { privacyFirewallMiddleware, encryptSensitiveField } = require('./privacy_firewall');
 
 const app = express();
+<<<<<<< HEAD
 const server = http.createServer(app);
+=======
+const signDetectionRoutes = require('./src/routes/signDetectionRoutes');
+>>>>>>> 4cad1b9d54f79e0e34fb77904855afd48c9132a6
 const BASE_PORT = Number(process.env.PORT) || 5001;
 let SERVER_PORT = BASE_PORT;
 const JWT_SECRET = process.env.JWT_SECRET || 'echosign_production_jwt_secret_key_8f93a1c4b2e5d';
@@ -555,6 +559,8 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+app.use('/api/sign-detect', signDetectionRoutes);
+
 app.post('/api/ai/chat', async (req, res) => {
   try {
     const { message, personaCategory, liveGlosses = [] } = req.body;
@@ -750,6 +756,40 @@ app.post('/api/translator/translate', (req, res) => {
     input: text,
     result: match,
     timestamp: new Date().toISOString()
+  });
+});
+
+// Suite Endpoint 3: Emergency Alert Broadcast (/api/emergency/broadcast)
+app.post('/api/emergency/broadcast', (req, res) => {
+  const { alertId, label = '', speech = '', location = '' } = req.body || {};
+
+  if (!alertId || !speech) {
+    return res.status(400).json({
+      success: false,
+      error: 'alertId and speech are required'
+    });
+  }
+
+  if (!inMemoryStore.emergencyAlerts) {
+    inMemoryStore.emergencyAlerts = [];
+  }
+
+  const alert = {
+    id: `alert_${Date.now()}`,
+    alertId,
+    label,
+    speech,
+    location,
+    status: 'BROADCASTING',
+    createdAt: new Date().toISOString()
+  };
+
+  inMemoryStore.emergencyAlerts.push(alert);
+
+  return res.status(201).json({
+    success: true,
+    message: 'Emergency alert broadcast to responders',
+    alert
   });
 });
 
