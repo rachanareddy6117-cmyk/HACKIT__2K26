@@ -12,11 +12,8 @@ const Anthropic = require('@anthropic-ai/sdk');
 const { privacyFirewallMiddleware, encryptSensitiveField } = require('./privacy_firewall');
 
 const app = express();
-<<<<<<< HEAD
 const server = http.createServer(app);
-=======
 const signDetectionRoutes = require('./src/routes/signDetectionRoutes');
->>>>>>> 4cad1b9d54f79e0e34fb77904855afd48c9132a6
 const BASE_PORT = Number(process.env.PORT) || 5001;
 let SERVER_PORT = BASE_PORT;
 const JWT_SECRET = process.env.JWT_SECRET || 'echosign_production_jwt_secret_key_8f93a1c4b2e5d';

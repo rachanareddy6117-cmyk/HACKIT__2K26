@@ -1,12 +1,9 @@
 import React, { useRef, useState, useEffect } from 'react';
 import CameraView from './CameraView';
 import HandTracker from './HandTracker';
-<<<<<<< HEAD
 import DeafDumbGridModule from './DeafDumbGridModule';
 import AutismSupportModule from './AutismSupportModule';
-=======
 import SignIllustration from './SignIllustration';
->>>>>>> 4cad1b9d54f79e0e34fb77904855afd48c9132a6
 import { sendChatMessage } from '../services/api';
 
 export default function LiveWorkspaceView({
@@ -419,7 +416,6 @@ export default function LiveWorkspaceView({
                   />
                 </div>
 
-<<<<<<< HEAD
                 {/* Fallback SVG Mesh Overlay matching the user HTML template */}
                 <svg
                   width="180"
@@ -446,27 +442,6 @@ export default function LiveWorkspaceView({
                   <circle cx="155" cy="60" r="3" fill="#00f2fe" />
                 </svg>
 
-                {/* Live Detected Overlay Badge */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: '1.5rem',
-                  left: '1.5rem',
-                  background: 'rgba(18, 22, 33, 0.85)',
-                  border: '1px solid #00f2fe',
-                  borderRadius: 12,
-                  padding: '0.75rem 1.25rem',
-                  backdropFilter: 'blur(8px)',
-                  zIndex: 10,
-                  boxShadow: '0 4px 20px rgba(0,242,254,0.15)'
-                }}>
-                  <div style={{ fontSize: '0.9rem', color: '#fff' }}>
-                    Detected Sign: <strong style={{ color: '#00f2fe' }}>{detectedSign}</strong>
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: '#8a99ad', marginTop: 2 }}>
-                    Confidence: {confidence}%
-                  </div>
-                </div>
-=======
             {/* Live Detected Overlay Badge */}
             <div style={{ position: 'absolute', top: '1rem', right: '1rem', zIndex: 10, padding: '0.5rem', borderRadius: 12, background: 'rgba(5,7,10,0.85)', border: '1px solid rgba(0,242,254,0.45)', textAlign: 'center' }}>
               <div style={{ fontSize: '0.6rem', color: '#8a99ad', textTransform: 'uppercase', fontWeight: 800 }}>Reference Sign</div>
@@ -488,7 +463,9 @@ export default function LiveWorkspaceView({
             }}>
               <div style={{ fontSize: '0.9rem', color: '#fff' }}>
                 Detected Sign: <strong style={{ color: '#00f2fe' }}>{detectedSign}</strong>
->>>>>>> 4cad1b9d54f79e0e34fb77904855afd48c9132a6
+              </div>
+              <div style={{ fontSize: '0.75rem', color: '#8a99ad', marginTop: 2 }}>
+                Confidence: {confidence}%
               </div>
             </>
           )}

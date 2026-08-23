@@ -4,15 +4,10 @@
  * and python microservice on port 8000.
  */
 
-<<<<<<< HEAD
-let activeApiBase = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '' : 'http://localhost:5001');
-const INFERENCE_BASE = import.meta.env.VITE_INFERENCE_URL || (import.meta.env.PROD ? '' : 'http://localhost:8000');
-=======
 import { STORAGE_KEYS } from '../utils/storage';
 
-let activeApiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
-const INFERENCE_BASE = import.meta.env.VITE_INFERENCE_URL || 'http://localhost:8000';
->>>>>>> 4cad1b9d54f79e0e34fb77904855afd48c9132a6
+let activeApiBase = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? '' : 'http://localhost:5001');
+const INFERENCE_BASE = import.meta.env.VITE_INFERENCE_URL || (import.meta.env.PROD ? '' : 'http://localhost:8000');
 
 async function post(path, body, customBase) {
   const candidateBases = customBase ? [customBase] : [activeApiBase, import.meta.env.PROD ? '' : 'http://localhost:5001'];

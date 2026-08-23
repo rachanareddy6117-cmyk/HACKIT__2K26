@@ -1,14 +1,8 @@
-<<<<<<< HEAD
-import React, { useState } from 'react';
-import { ArrowRight, Volume2, Type, Mic, Eye, Globe, Sparkles } from 'lucide-react';
-import { translateApi } from '../services/api';
-import LiveSignInput from './LiveSignInput';
-=======
 import React, { useRef, useState } from 'react';
 import { FilesetResolver, HandLandmarker } from '@mediapipe/tasks-vision';
 import { ArrowRight, Volume2, Type, Mic, Eye, Globe, Sparkles, Upload, Loader2 } from 'lucide-react';
 import { detectSignFromBatch, glossToText, translateApi } from '../services/api';
->>>>>>> 4cad1b9d54f79e0e34fb77904855afd48c9132a6
+import LiveSignInput from './LiveSignInput';
 
 const TABS = [
   { id: 'TEXT',   label: 'TEXT',   icon: Type },
